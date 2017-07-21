@@ -28,7 +28,7 @@ struct TargetInfo {
 
 std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
                                     int h_min, int h_max, int s_min, int s_max,
-                                    int v_min, int v_max) {
+                                    int v_min, int v_max, cv::Mat *&display) {
   LOGD("Image is %d x %d", w, h);
   LOGD("H %d-%d S %d-%d V %d-%d", h_min, h_max, s_min, s_max, v_min, v_max);
   int64_t t;
@@ -188,6 +188,7 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
                   vis.data);
   LOGD("glTexSubImage2D() costs %d ms", getTimeInterval(t));
 
+  display = &vis;
   return targets;
 }
 
@@ -225,8 +226,9 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
                              int mode, int h_min, int h_max, int s_min,
                              int s_max, int v_min, int v_max,
                              jobject destTargetInfo) {
+  cv::Mat *dis;
   auto targets = processImpl(w, h, tex2, static_cast<DisplayMode>(mode), h_min,
-                             h_max, s_min, s_max, v_min, v_max);
+                             h_max, s_min, s_max, v_min, v_max, dis);
   int numTargets = targets.size();
   ensureJniRegistered(env);
   env->SetIntField(destTargetInfo, sNumTargetsField, numTargets);
@@ -243,4 +245,40 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
     env->SetDoubleField(targetObject, sWidthField, target.width);
     env->SetDoubleField(targetObject, sHeightField, target.height);
   }
+}
+  extern "C" void processFrameAndSetImage(JNIEnv *env, int tex1, int tex2, int w, int h,
+                               int mode, int h_min, int h_max, int s_min,
+                               int s_max, int v_min, int v_max, jint *out_dis,
+                               jobject destTargetInfo) {
+    cv::Mat *dis;
+    int64_t t;
+    auto targets = processImpl(w, h, tex2, static_cast<DisplayMode>(mode), h_min,
+                               h_max, s_min, s_max, v_min, v_max, dis);
+    int numTargets = targets.size();
+    ensureJniRegistered(env);
+    env->SetIntField(destTargetInfo, sNumTargetsField, numTargets);
+
+    t = getTimeMs();
+    jint *arr = env->GetIntArrayElements((jintArray) out_dis, NULL);
+    for(int i = 0; i < dis->rows; i++) {
+      for(int j = 0; j < dis->cols; j++) {
+        arr[i * w + j] = dis->at<int>(i,j);
+      }
+    }
+    env->ReleaseIntArrayElements((jintArray) out_dis, arr, 0);
+    LOGD("Mat to Array costs %d ms", getTimeInterval(t));
+
+    if (numTargets == 0) {
+      return;
+    }
+    jobjectArray targetsArray = static_cast<jobjectArray>(
+        env->GetObjectField(destTargetInfo, sTargetsField));
+    for (int i = 0; i < std::min(numTargets, 3); ++i) {
+      jobject targetObject = env->GetObjectArrayElement(targetsArray, i);
+      const auto &target = targets[i];
+      env->SetDoubleField(targetObject, sCentroidXField, target.centroid_x);
+      env->SetDoubleField(targetObject, sCentroidYField, target.centroid_y);
+      env->SetDoubleField(targetObject, sWidthField, target.width);
+      env->SetDoubleField(targetObject, sHeightField, target.height);
+    }
 }

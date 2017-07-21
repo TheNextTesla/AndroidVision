@@ -25,6 +25,21 @@ public class NativePart {
             int v_max,
             TargetsInfo destInfo);
 
+    public static native void processFrameAndSetImage(
+            int tex1,
+            int tex2,
+            int w,
+            int h,
+            int mode,
+            int h_min,
+            int h_max,
+            int s_min,
+            int s_max,
+            int v_min,
+            int v_max,
+            int[] out_dis,
+            TargetsInfo destInfo);
+
     /**
      * Classes referenced from native code, DO NOT CHANGE ANY NAMING!!!!
      */

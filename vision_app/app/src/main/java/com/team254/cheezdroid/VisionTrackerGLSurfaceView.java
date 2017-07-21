@@ -11,6 +11,7 @@ import org.opencv.android.BetterCameraGLSurfaceView;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,6 +22,8 @@ import android.view.SurfaceHolder;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 
 public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener {
@@ -39,6 +42,10 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     static final double kCenterCol = ((double) kWidth) / 2.0 - .5;
     static final double kCenterRow = ((double) kHeight) / 2.0 - .5;
 
+    private boolean byteArraySwitch;
+    private final IntBuffer bufferA = IntBuffer.allocate(kWidth * kHeight);
+    private final IntBuffer bufferB = IntBuffer.allocate(kWidth * kHeight);
+
     static BetterCamera2Renderer.Settings getCameraSettings() {
         BetterCamera2Renderer.Settings settings = new BetterCamera2Renderer.Settings();
         settings.height = kHeight;
@@ -54,6 +61,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
 
     public VisionTrackerGLSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs, getCameraSettings());
+        byteArraySwitch = true;
     }
 
     public void openOptionsMenu() {
@@ -128,11 +136,37 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         Pair<Integer, Integer> hRange = m_prefs != null ? m_prefs.getThresholdHRange() : blankPair();
         Pair<Integer, Integer> sRange = m_prefs != null ? m_prefs.getThresholdSRange() : blankPair();
         Pair<Integer, Integer> vRange = m_prefs != null ? m_prefs.getThresholdVRange() : blankPair();
+
+        if(byteArraySwitch)
+        {
+            NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
+                    sRange.first, sRange.second, vRange.first, vRange.second, bufferA.array(), targetsInfo);
+        }
+        else
+        {
+            NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
+                    sRange.first, sRange.second, vRange.first, vRange.second, bufferB.array(), targetsInfo);
+        }
+
+        /*
         NativePart.processFrame(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
                 sRange.first, sRange.second, vRange.first, vRange.second, targetsInfo);
+        */
 
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
+
+        long timeCheck = System.currentTimeMillis();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        bitmap.setPixels(byteArraySwitch ? bufferA.array() : bufferB.array(), 0, width, 0, 0, width, height);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        Log.d(LOGTAG, "Bitmap Conversion Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
+        timeCheck = System.currentTimeMillis();
+        byte[] byteArray = stream.toByteArray();
+        MjpgServer.getInstance().update(byteArray);
+        Log.d(LOGTAG, "Bitmap Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
+
         for (int i = 0; i < targetsInfo.numTargets; ++i) {
             NativePart.TargetsInfo.Target target = targetsInfo.targets[i];
 

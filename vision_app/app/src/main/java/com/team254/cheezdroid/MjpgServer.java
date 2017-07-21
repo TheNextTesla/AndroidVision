@@ -21,29 +21,7 @@ public class MjpgServer {
 
     public static final String TAG = "MJPG";
 
-    byte[] defaultImageBytes = null;
-    byte[] defaultImageBytesB = null;
-
-    public void initFromAssets(Context context) {
-        try {
-            InputStream is = context.getAssets().open("vision_mode.jpg");
-            byte[] imgBytes = new byte[is.available()+1];
-            is.read(imgBytes);
-            defaultImageBytes = imgBytes.clone();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            InputStream is = context.getAssets().open("vision_mode_2.jpg");
-            byte[] imgBytes = new byte[is.available()+1];
-            is.read(imgBytes);
-            defaultImageBytesB = imgBytes.clone();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static MjpgServer getInstance() {
+    public static MjpgServer getInstance() {
         if (sInst == null) {
             sInst = new MjpgServer();
         }
@@ -70,12 +48,11 @@ public class MjpgServer {
                 Log.i(TAG, "Starting a connection!");
                 OutputStream stream = mSocket.getOutputStream();
                 stream.write(("HTTP/1.0 200 OK\r\n" +
-                        "Server: cheezyvision\r\n" +
+                        "Server: androidvision\r\n" +
                         "Cache-Control: no-cache\r\n" +
                         "Pragma: no-cache\r\n" +
                         "Connection: close\r\n" +
                         "Content-Type: multipart/x-mixed-replace;boundary=--" + K_BOUNDARY + "\r\n").getBytes());
-                sendDefaultImage();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -95,30 +72,12 @@ public class MjpgServer {
                 stream.write(buffer);
                 stream.flush();
             } catch (IOException e) {
+                e.printStackTrace();
                 // There is a broken pipe exception being thrown here I cannot figure out.
             }
         }
 
     }
-
-    private Runnable sendDefaultImages = new Runnable() {
-
-        @Override
-        public void run() {
-            int count = 0;
-            while (mRunning) {
-                if (defaultImageBytes != null && System.currentTimeMillis() - mLastUpdate > 200) {
-                    update(count % 2 == 0 ? defaultImageBytes : defaultImageBytesB, false);
-                }
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                count++;
-            }
-        }
-    };
 
     private ServerSocket mServerSocket;
     private boolean mRunning;
@@ -127,20 +86,13 @@ public class MjpgServer {
 
     private MjpgServer() {
         try {
-            initFromAssets(AppContext.getDefaultContext());
             mServerSocket = new ServerSocket(5800);
             mRunning = true;
             mRunThread = new Thread(runner);
             mRunThread.start();
-            new Thread(sendDefaultImages).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void sendDefaultImage() {
-        update(defaultImageBytes);
-        update(defaultImageBytes);
     }
 
     public void update(byte[] bytes) {
