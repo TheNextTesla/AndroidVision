@@ -66,13 +66,14 @@ public class MjpgServer {
             try {
                 stream = mSocket.getOutputStream();
                 stream.write(("\r\n--" + K_BOUNDARY + "\r\n").getBytes());
-                stream.write(("Content-type: image/jpeg\r\n" +
+                //Content-type: image/jpeg
+                stream.write(("Content-type: image/bmp\r\n" +
                         "Content-Length: " + buffer.length + "\r\n" +
                         "\r\n").getBytes());
                 stream.write(buffer);
                 stream.flush();
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 // There is a broken pipe exception being thrown here I cannot figure out.
             }
         }

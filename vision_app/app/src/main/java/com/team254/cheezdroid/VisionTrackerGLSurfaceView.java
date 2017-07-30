@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 
@@ -156,16 +157,29 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
 
+
         long timeCheck = System.currentTimeMillis();
+
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.setPixels(byteArraySwitch ? bufferA.array() : bufferB.array(), 0, width, 0, 0, width, height);
+        Log.d(LOGTAG, Integer.toHexString(byteArraySwitch ? bufferA.array()[0] : bufferB.array()[0]));
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
         Log.d(LOGTAG, "Bitmap Conversion Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
+
+        //Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        //bmp.setPixels(byteArraySwitch ? bufferA.array() : bufferB.array(), 0, width, 0, 0, width, height);
+        //int bytes = bmp.getByteCount()
+        //ByteBuffer buffer = ByteBuffer.allocate(bytes);
+        //bmp.copyPixelsToBuffer(buffer);
+        //byte[] byteArray = buffer.array();
+        //Log.d(LOGTAG, "Bitmap Conversion Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
+
         timeCheck = System.currentTimeMillis();
         byte[] byteArray = stream.toByteArray();
+
         MjpgServer.getInstance().update(byteArray);
-        Log.d(LOGTAG, "Bitmap Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
+        Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
 
         for (int i = 0; i < targetsInfo.numTargets; ++i) {
             NativePart.TargetsInfo.Target target = targetsInfo.targets[i];
@@ -195,5 +209,36 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
 
     private static Pair<Integer, Integer> blankPair() {
         return new Pair<Integer, Integer>(0, 255);
+    }
+
+    public static Bitmap RGBA2ARGB(Bitmap img)
+    {
+
+        int width  = img.getWidth();
+        int height = img.getHeight();
+
+        int[] pixelsIn  = new int[height*width];
+        int[] pixelsOut = new int[height*width];
+
+        img.getPixels(pixelsIn,0,width,0,0,width,height);
+
+        int pixel=0;
+        int count=width*height;
+
+        while(count-->0){
+            int inVal = pixelsIn[pixel];
+
+            //Get and set the pixel channel values from/to int  //TODO OPTIMIZE!
+            int r = (int)( (inVal & 0xff000000)>>24 );
+            int g = (int)( (inVal & 0x00ff0000)>>16 );
+            int b = (int)( (inVal & 0x0000ff00)>>8  );
+            int a = (int)(  inVal & 0x000000ff)      ;
+
+            pixelsOut[pixel] = (int)( a <<24 | r << 16 | g << 8 | b );
+            pixel++;
+        }
+
+        Bitmap out =  Bitmap.createBitmap(pixelsOut,0,width,width,height, Bitmap.Config.ARGB_8888);
+        return out;
     }
 }
