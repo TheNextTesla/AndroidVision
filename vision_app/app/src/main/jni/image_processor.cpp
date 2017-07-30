@@ -222,73 +222,7 @@ static void ensureJniRegistered(JNIEnv *env) {
   sHeightField = env->GetFieldID(targetClass, "height", "D");
 }
 
-inline unsigned int colorRGBAToARGB(unsigned int x)
-{
-    //return
-    // Source is in format: 0xAARRGGBB
-    //// 0xRRGGBBAA
-    /*
-    ((x & 0xFF000000) >> 24) | //______AA
-    ((x & 0x00FF0000) >>  8) | //____RR__
-    ((x & 0x0000FF00) <<  8) | //__GG____
-    ((x & 0x000000FF) << 24);  //BB______
-    */
-    // Return value is in format:  0xBBGGRRAA
-    ////0xAARRGGBB
-    /*
-    ((x & 0x0000FF00) <<  8) |
-    ((x & 0x00FF0000) >>  8) |
-    ((x & 0xFF000000) >> 24) |
-    ((x & 0x000000FF) << 24);
-    */
-    /*
-    ((x & 0x000000FF) << 24) |
-    ((x & 0xFF000000) >> 24) |
-    ((x & 0x00FF0000) >>  8) |
-    ((x & 0x0000FF00) <<  8);
-    */
-
-    //if(print)
-    //{
-        //LOGD("Int Input: %d", x);
-    //}
-
-    //unsigned int r = (unsigned int)( (x & 0xff000000)>>24 );
-    //unsigned int g = (unsigned int)( (x & 0x00ff0000)>>16 );
-    //unsigned int b = (unsigned int)( (x & 0x0000ff00)>>8  );
-    //unsigned int a = (unsigned int)(x & 0x000000ff)      ;
-
-    //return (unsigned int)( a <<24 | r << 16 | g << 8 | b);
-    //return (unsigned int)( b | g << 8 | r << 16 | a << 24);
-    //return (unsigned int)( a << 24 | b | g << 8 | r << 16);
-    //return (unsigned int)( a << 24 | b | r << 16 | g << 8);
-    //return (unsigned int)(b | a << 24 | g << 8 | r << 16);
-    //return (unsigned int)(b | a << 24 | r << 16 | g << 8);
-    //return (unsigned int)(a << 24 | r << 16 | g << 8 | b);
-    //return (unsigned int)(a << 24 | 0 | g << 8 | b);
-    //return (unsigned int)(a << 24 | b << 16 | g << 8 | b);
-    //return (unsigned int)(b << 24 | r << 16 | a << 8 | g);
-    //return (unsigned int)(b << 24 | a << 16 | r << 8 | g);
-    //return (unsigned int)(b << 24 | a << 16 | r << 8 | g);
-
-    //if(print)
-    //{
-        //LOGD("R%dG%dB%dA%d", r, g, b, a);
-    //}
-
-    //unsigned int out = (unsigned int) (b << 24 | r << 16 | g << 8 | a);
-    //unsigned int out = (unsigned int) (x << 24 | x << 16 | x << 8 | x);
-    //unsigned int out = (unsigned int) (r << 24 | a << 16 | b << 8 | g);
-
-    //if(print)
-    //{
-        //LOGD("Int Output: %d", out);
-    //}
-
-    //eturn out;
-
-    //return (x << (3*8)) | (x >> 8);
-
+inline unsigned int colorRGBAToARGB(unsigned int x) {
     //https://stackoverflow.com/questions/11259391/fast-converting-rgba-to-argb
     return (unsigned int) (((x & 0xff000000) >> 24) << 24 | (x & 0x000000ff) << 16 | ((x & 0x0000ff00) >> 8 << 8) | ((x & 0x00ff0000) >> 16));
 }
@@ -330,10 +264,11 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
     env->SetIntField(destTargetInfo, sNumTargetsField, numTargets);
 
     t = getTimeMs();
-      for(int i = 0; i < dis->rows; i++) {
+    jint *arr = env->GetIntArrayElements((jintArray) out_dis, NULL);
+
+    for(int i = dis->rows - 1; i >= 0; i--) {
       for(int j = dis->cols - 1; j >= 0; j--) {
-        arr[i * w + j] = colorRGBAToARGB(dis->at<unsigned int>(i,j));
-        //arr[i * w + j] = (unsigned int) dis_conv.at<unsigned short>(i,j);
+        arr[((w * h) - (i * w)) + j] = colorRGBAToARGB(dis->at<unsigned int>(i,j));
       }
     }
     env->ReleaseIntArrayElements((jintArray) out_dis, arr, 0);
