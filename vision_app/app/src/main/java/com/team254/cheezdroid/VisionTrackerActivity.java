@@ -212,8 +212,6 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //MjpgServer.getInstance().initFromAssets(this);
-
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -268,6 +266,8 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             }
         });
 
+        MjpgServer.getInstance().pause();
+
         whitelistLockTasks();
 
         Log.i("VisionActivity", "onCreate");
@@ -285,6 +285,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         TextView tv = (TextView) findViewById(R.id.fps_text_view);
         mProcMode = (TextView) findViewById(R.id.proc_mode_text_view);
         mView.setProcessingMode(NativePart.DISP_MODE_TARGETS_PLUS);
+        MjpgServer.getInstance().pause();
         runOnUiThread(new Runnable() {
             public void run() {
                 updateProcModeText();

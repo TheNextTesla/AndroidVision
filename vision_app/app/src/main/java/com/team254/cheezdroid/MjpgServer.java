@@ -1,15 +1,10 @@
 package com.team254.cheezdroid;
 
-import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,6 +13,7 @@ public class MjpgServer {
 
     public static final String K_BOUNDARY = "boundary";
     private static MjpgServer sInst = null;
+    private static byte[] mDefault;
 
     public static final String TAG = "MJPG";
 
@@ -67,7 +63,7 @@ public class MjpgServer {
                 stream = mSocket.getOutputStream();
                 stream.write(("\r\n--" + K_BOUNDARY + "\r\n").getBytes());
                 //Content-type: image/jpeg
-                stream.write(("Content-type: image/bmp\r\n" +
+                stream.write(("Content-type: image/jpeg\r\n" +
                         "Content-Length: " + buffer.length + "\r\n" +
                         "\r\n").getBytes());
                 stream.write(buffer);
@@ -98,6 +94,12 @@ public class MjpgServer {
 
     public void update(byte[] bytes) {
         new SendUpdateTask().execute(bytes);
+    }
+
+    public void pause() {
+        for(Connection c : mConnections) {
+            c.writeImageUpdate(mDefault);
+        }
     }
 
     private class SendUpdateTask extends AsyncTask<byte[], Void, Void> {
