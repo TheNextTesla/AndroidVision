@@ -8,6 +8,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/ocl.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 #include "common.hpp"
 
@@ -266,11 +267,16 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
     t = getTimeMs();
     jint *arr = env->GetIntArrayElements((jintArray) out_dis, NULL);
 
+    //std::vector<unsigned char> buffer;
+    //cv::InputArray inputArray(*dis);
+    //cv::imencode(".jpg", inputArray, buffer);
+
     for(int i = dis->rows - 1; i >= 0; i--) {
       for(int j = dis->cols - 1; j >= 0; j--) {
         arr[((w * h) - (i * w)) + j] = colorRGBAToARGB(dis->at<unsigned int>(i,j));
       }
     }
+
     env->ReleaseIntArrayElements((jintArray) out_dis, arr, 0);
     LOGD("Array Transfer Costs %d ms", getTimeInterval(t));
 
