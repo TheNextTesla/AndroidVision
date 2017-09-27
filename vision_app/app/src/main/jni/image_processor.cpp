@@ -8,6 +8,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/ocl.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 #include "common.hpp"
 
@@ -253,7 +254,7 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
 }
   extern "C" void processFrameAndSetImage(JNIEnv *env, int tex1, int tex2, int w, int h,
                                int mode, int h_min, int h_max, int s_min,
-                               int s_max, int v_min, int v_max, jint *out_dis,
+                               int s_max, int v_min, int v_max, jbyte *out_dis,
                                jobject destTargetInfo) {
     cv::Mat *dis;
     int64_t t;
@@ -264,14 +265,36 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
     env->SetIntField(destTargetInfo, sNumTargetsField, numTargets);
 
     t = getTimeMs();
-    jint *arr = env->GetIntArrayElements((jintArray) out_dis, NULL);
+    jbyte *arr = env->GetByteArrayElements((jbyteArray) out_dis, NULL);
+
+    std::vector<unsigned char> buffer;
+    cv::Mat tempMat(dis->rows, dis->cols, dis->type());
 
     for(int i = dis->rows - 1; i >= 0; i--) {
-      for(int j = dis->cols - 1; j >= 0; j--) {
-        arr[((w * h) - (i * w)) + j] = colorRGBAToARGB(dis->at<unsigned int>(i,j));
-      }
+        for(int j = dis->cols - 1; j >= 0; j--) {
+            tempMat.at<unsigned int>(dis->rows - i - 1, j) = colorRGBAToARGB(dis->at<unsigned int>(i,j));
+        }
     }
-    env->ReleaseIntArrayElements((jintArray) out_dis, arr, 0);
+
+    LOGD("Array Conversion Costs %d ms", getTimeInterval(t));
+    t = getTimeMs();
+
+    cv::InputArray inputArray(tempMat);
+    cv::imencode(".jpg", inputArray, buffer);
+
+    int bufferSize = buffer.size();
+    LOGD("Copying %d Entries", bufferSize);
+
+    for(int i = 0; i < bufferSize; i++) {
+        arr[i] = buffer[i];
+    }
+
+    arr[w * h * 4] = (unsigned char) ((bufferSize & 0xff000000) >> 24);
+    arr[w * h * 4 + 1] = (unsigned char) ((bufferSize & 0x00ff0000) >> 16);
+    arr[w * h * 4 + 2] = (unsigned char) ((bufferSize & 0x0000ff00) >> 8);
+    arr[w * h * 4 + 3] = (unsigned char) ((bufferSize & 0x000000ff));
+
+    env->ReleaseByteArrayElements((jbyteArray) out_dis, arr, 0);
     LOGD("Array Transfer Costs %d ms", getTimeInterval(t));
 
     if (numTargets == 0) {

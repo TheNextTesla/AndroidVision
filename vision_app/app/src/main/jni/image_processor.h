@@ -32,7 +32,7 @@ extern "C" {
                     int s_max,
                     int v_min,
                     int v_max,
-                    jint *out_dis,
+                    jbyte *out_dis,
                     jobject destTargetInfo);
 
 #ifdef __cplusplus

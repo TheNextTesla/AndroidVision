@@ -58,6 +58,7 @@ public class MjpgServer {
             if (!isAlive()) {
                 return;
             }
+            Log.d(TAG, "Uploading " + buffer.length + " bytes");
             OutputStream stream = null;
             try {
                 stream = mSocket.getOutputStream();

@@ -25,6 +25,7 @@ import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener {
@@ -44,8 +45,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     static final double kCenterRow = ((double) kHeight) / 2.0 - .5;
 
     private boolean byteArraySwitch;
-    private final IntBuffer bufferA = IntBuffer.allocate(kWidth * kHeight);
-    private final IntBuffer bufferB = IntBuffer.allocate(kWidth * kHeight);
+    private final ByteBuffer bufferA = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
+    private final ByteBuffer bufferB = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
 
     static BetterCamera2Renderer.Settings getCameraSettings() {
         BetterCamera2Renderer.Settings settings = new BetterCamera2Renderer.Settings();
@@ -55,8 +56,9 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         settings.camera_settings.put(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF);
         settings.camera_settings.put(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF);
         settings.camera_settings.put(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
-        settings.camera_settings.put(CaptureRequest.SENSOR_EXPOSURE_TIME, 1000000L);
+        settings.camera_settings.put(CaptureRequest.SENSOR_EXPOSURE_TIME, 10000000L);
         settings.camera_settings.put(CaptureRequest.LENS_FOCUS_DISTANCE, .2f);
+        //settings.camera_settings.put(CaptureRequest.
         return settings;
     }
 
@@ -158,15 +160,18 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
 
         long timeCheck = System.currentTimeMillis();
+        /*
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.setPixels(byteArraySwitch ? bufferA.array() : bufferB.array(), 0, width, 0, 0, width, height);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
         Log.d(LOGTAG, "Bitmap Conversion Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
+        */
 
         timeCheck = System.currentTimeMillis();
-        byte[] byteArray = stream.toByteArray();
-        MjpgServer.getInstance().update(byteArray);
+        byte[] byteArray = byteArraySwitch ? bufferA.array() : bufferB.array();
+        int lengthOfByteArray = ((0x000000ff & byteArray[width * height * 4]) << 24) | ((0x000000ff & byteArray[width * height * 4 + 1]) << 16) | ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) | ((0x000000ff & byteArray[width * height * 4 + 3]));
+        MjpgServer.getInstance().update(Arrays.copyOfRange(byteArray, 0, lengthOfByteArray));
         Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
 
         for (int i = 0; i < targetsInfo.numTargets; ++i) {
