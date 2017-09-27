@@ -276,13 +276,15 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
         }
     }
 
+    LOGD("Array Conversion Costs %d ms", getTimeInterval(t));
+    t = getTimeMs();
+
     cv::InputArray inputArray(tempMat);
     cv::imencode(".jpg", inputArray, buffer);
 
-    LOGD("Array Conversion Costs %d ms", getTimeInterval(t));
+
 
     int bufferSize = buffer.size();
-    t = getTimeMs();
     LOGD("Copying %d Entries", bufferSize);
 
     for(int i = 0; i < bufferSize; i++) {
