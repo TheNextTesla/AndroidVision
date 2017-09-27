@@ -37,7 +37,7 @@ public class NativePart {
             int s_max,
             int v_min,
             int v_max,
-            int[] out_dis,
+            byte[] out_dis,
             TargetsInfo destInfo);
 
     /**

@@ -32,7 +32,7 @@ JNIEXPORT void JNICALL Java_com_team254_cheezdroid_NativePart_processFrame(
       jint s_max,
       jint v_min,
       jint v_max,
-      jint *out_dis,
+      jbyte *out_dis,
       jobject destTargetInfo) {
     processFrameAndSetImage(env, tex1, tex2, w, h, mode, h_min, h_max, s_min, s_max, v_min, v_max, out_dis, destTargetInfo);
 }
