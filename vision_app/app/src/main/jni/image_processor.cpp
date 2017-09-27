@@ -282,8 +282,6 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
     cv::InputArray inputArray(tempMat);
     cv::imencode(".jpg", inputArray, buffer);
 
-
-
     int bufferSize = buffer.size();
     LOGD("Copying %d Entries", bufferSize);
 
