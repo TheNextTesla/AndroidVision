@@ -272,7 +272,7 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
 
     for(int i = dis->rows - 1; i >= 0; i--) {
         for(int j = dis->cols - 1; j >= 0; j--) {
-            tempMat.at<unsigned int>(dis->rows - i - 1, dis->cols - j - 1) = colorRGBAToARGB(dis->at<unsigned int>(i,j));
+            tempMat.at<unsigned int>(dis->rows - i - 1, j) = colorRGBAToARGB(dis->at<unsigned int>(i,j));
         }
     }
 
