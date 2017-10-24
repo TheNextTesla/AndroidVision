@@ -11,7 +11,6 @@ import org.opencv.android.BetterCameraGLSurfaceView;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,9 +21,7 @@ import android.view.SurfaceHolder;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -48,10 +45,12 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     //Height and Width of Image Process, and Related Variable
     static final int kHeight = 480;
     static final int kWidth = 640;
+
+    //These Variables are Related the the 'Homogeneous Vectors the CheezyPoofs Use' - See Below
     static final double kCenterCol = ((double) kWidth) / 2.0 - .5;
     static final double kCenterRow = ((double) kHeight) / 2.0 - .5;
 
-    //Two Buffers of Bytes for The C++ Image to Be Transfered Back Safely
+    //Two Buffers of Bytes for The C++ Image to Be Transferred Back Safely
     private boolean byteArraySwitch;
     private final ByteBuffer bufferA = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
     private final ByteBuffer bufferB = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
@@ -222,7 +221,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         Pair<Integer, Integer> vRange = m_prefs != null ? m_prefs.getThresholdVRange() : blankPair();
 
         //Runs the Native C++ Code (See jni.c -> image_processor.cpp
-        //Switches Between Two Arrays to Be Filled by the Process Frame and Set Image
+        //Switches Between Two Arrays to Be Filled by the Process Frame and Set Image C++ Method
         //TODO: Add Option to Not Send Image
         if(byteArraySwitch)
         {
@@ -234,6 +233,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
             NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
                     sRange.first, sRange.second, vRange.first, vRange.second, bufferB.array(), targetsInfo);
         }
+        byteArraySwitch = !byteArraySwitch;
 
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
@@ -249,6 +249,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
             NativePart.TargetsInfo.Target target = targetsInfo.targets[i];
 
             //TODO: Find the Application of this Conversion.  What does it do to Vision Processing?
+            //https://stackoverflow.com/questions/29199480/what-is-the-use-of-homogeneous-vectors-in-computer-vision
             // Convert to a homogeneous 3d vector with x = 1
             //double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
             //double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
@@ -263,6 +264,9 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
             TargetUpdateMessage update = new TargetUpdateMessage(visionUpdate, System.nanoTime());
             mRobotConnection.send(update);
         }
+
+        //TODO: This seems to slow the memory bumps, any major effect on speed?
+        System.gc();
         return true;
     }
 }
