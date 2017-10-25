@@ -69,6 +69,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         return sLocked;
     }
 
+
     @Override
     public void shotTaken() {
         Log.i("VisionActivity", "Shot taken");
@@ -260,6 +261,27 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             public boolean onLongClick(View v) {
                 if (sLocked) {
                     setLockOff();
+                    /*
+                    09-14 16:06:11.656 21964-21964/com.team254.cheezdroid E/AndroidRuntime: FATAL EXCEPTION: main
+                                                                        Process: com.team254.cheezdroid, PID: 21964
+                                                                        java.lang.NullPointerException: Attempt to read from field 'android.content.Intent com.android.server.am.TaskRecord.intent' on a null object reference
+                                                                            at android.os.Parcel.readException(Parcel.java:1546)
+                                                                            at android.os.Parcel.readException(Parcel.java:1493)
+                                                                            at android.app.ActivityManagerProxy.stopLockTaskMode(ActivityManagerNative.java:5331)
+                                                                            at android.app.Activity.stopLockTask(Activity.java:6266)
+                                                                            at com.team254.cheezdroid.VisionTrackerActivity.setLockOff(VisionTrackerActivity.java:507)
+                                                                            at com.team254.cheezdroid.VisionTrackerActivity$2.onLongClick(VisionTrackerActivity.java:262)
+                                                                            at android.view.View.performLongClick(View.java:4803)
+                                                                            at android.view.View$CheckForLongPress.run(View.java:19818)
+                                                                            at android.os.Handler.handleCallback(Handler.java:739)
+                                                                            at android.os.Handler.dispatchMessage(Handler.java:95)
+                                                                            at android.os.Looper.loop(Looper.java:135)
+                                                                            at android.app.ActivityThread.main(ActivityThread.java:5351)
+                                                                            at java.lang.reflect.Method.invoke(Native Method)
+                                                                            at java.lang.reflect.Method.invoke(Method.java:372)
+                                                                            at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:908)
+                                                                            at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:703)
+                                                                            */
                     return true;
                 }
                 return false;

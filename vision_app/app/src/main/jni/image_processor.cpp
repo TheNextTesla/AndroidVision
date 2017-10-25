@@ -35,38 +35,47 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
   LOGD("H %d-%d S %d-%d V %d-%d", h_min, h_max, s_min, s_max, v_min, v_max);
   int64_t t;
 
+  //TODO: Do these arrays really need static lifecycles?
+  //Creates Pixel Array (Mat): https://docs.opencv.org/3.1.0/d3/d63/classcv_1_1Mat.html
   static cv::Mat input;
   input.create(h, w, CV_8UC4);
 
-  // read
+  //Retrieves the Image Bitmap from the 'OpenGL Buffer'
+  //https://stackoverflow.com/questions/29003414/render-camera-preview-on-a-texture-with-target-gl-texture-2d
   t = getTimeMs();
   glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, input.data);
   LOGD("glReadPixels() costs %d ms", getTimeInterval(t));
 
-  // modify
+  //Creates a Copy of the Mat Formatted in HSV
   t = getTimeMs();
   static cv::Mat hsv;
   cv::cvtColor(input, hsv, CV_RGBA2RGB);
   cv::cvtColor(hsv, hsv, CV_RGB2HSV);
   LOGD("cvtColor() costs %d ms", getTimeInterval(t));
 
+  //Creates a Copy of the HSV Mat as a Binary Image (Colors in Range are White, Else Black)
   t = getTimeMs();
   static cv::Mat thresh;
   cv::inRange(hsv, cv::Scalar(h_min, s_min, v_min),
               cv::Scalar(h_max, s_max, v_max), thresh);
   LOGD("inRange() costs %d ms", getTimeInterval(t));
 
+  //Begins Algorithm to Determine Visible Targets
   t = getTimeMs();
+  //Clones the Binary Threshold Image
   static cv::Mat contour_input;
   contour_input = thresh.clone();
+  //Creates Lists for Different Shapes (Before Consideration for Target)
   std::vector<std::vector<cv::Point>> contours;
   std::vector<cv::Point> convex_contour;
   std::vector<cv::Point> poly;
+  //Creates Lists for Different Target Considerations
   std::vector<TargetInfo> accepted_targets;
   std::vector<TargetInfo> targets;
   std::vector<TargetInfo> rejected_targets;
-  cv::findContours(contour_input, contours, cv::RETR_EXTERNAL,
-                   cv::CHAIN_APPROX_TC89_KCOS);
+  //Starts Finding the 'Contours' on the Binary Image
+  cv::findContours(contour_input, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_KCOS);
+  //Loops Through Each Found Contour for Target Consideration
   for (auto &contour : contours) {
     convex_contour.clear();
     cv::convexHull(contour, convex_contour, false);
@@ -83,8 +92,8 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
       target.height = bounding_rect.height;
       target.points = convex_contour;
 
-      // Filter based on size
-      // Keep in mind width/height are in imager terms...
+      //Filter based on size
+      //Keep in mind width/height are in imager terms...
       const double kMinTargetWidth = 20;
       const double kMaxTargetWidth = 300;
       const double kMinTargetHeight = 10;
@@ -128,6 +137,8 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
   }
   LOGD("Contour analysis costs %d ms", getTimeInterval(t));
 
+  //Runs Through the Targets, and Finds Their Relations To One Another
+  //Used to Find the Close Pairs of Targets
   const double kMaxOffset = 10;
   bool found = false;
   for (int i = 0; !found && i < accepted_targets.size(); i++) {
@@ -150,7 +161,7 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
     }
   }
 
-  // write back
+  //Write Back - 'vis' is the Image Array that Will Be Displayed
   t = getTimeMs();
   static cv::Mat vis;
   if (mode == DISP_MODE_RAW) {
@@ -159,7 +170,7 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
     cv::cvtColor(thresh, vis, CV_GRAY2RGBA);
   } else {
     vis = input;
-    // Render the targets
+    //Render the targets - Creates the On-Screen Visualization to Show Identified Targets
     for (auto &target : targets) {
       cv::polylines(vis, target.points, true, cv::Scalar(0, 112, 255), 3);
       cv::circle(vis, cv::Point(target.centroid_x, target.centroid_y), 4,
@@ -173,13 +184,17 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
   }
   LOGD("Creating vis costs %d ms", getTimeInterval(t));
 
+  //OpenGL Code - Pushes Image Pixel (Mat) Out to Screen 'glTexSubImage2D'
+  //https://developer.android.com/reference/android/opengl/GLUtils.html
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texOut);
   t = getTimeMs();
+  //https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexSubImage2D.xhtml
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE,
                   vis.data);
   LOGD("glTexSubImage2D() costs %d ms", getTimeInterval(t));
 
+  //Sets the Mat Pointer to the Pointer of the Displayed Mat
   display = &vis;
   return targets;
 }
@@ -216,7 +231,7 @@ static void ensureJniRegistered(JNIEnv *env) {
 
 inline unsigned int colorRGBAToARGB(unsigned int x) {
     //https://stackoverflow.com/questions/11259391/fast-converting-rgba-to-argb
-    return (unsigned int) (((x & 0xff000000) >> 24) << 24 | (x & 0x000000ff) << 16 | ((x & 0x0000ff00) >> 8 << 8) | ((x & 0x00ff0000) >> 16));
+    return (unsigned int) ((x & 0xff000000) | (x & 0x000000ff) << 16 | (x & 0x0000ff00) | ((x & 0x00ff0000) >> 16));
 }
 
 extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
@@ -232,6 +247,8 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
   if (numTargets == 0) {
     return;
   }
+
+  //Sends all of the Target Information to Java-Side Objects
   jobjectArray targetsArray = static_cast<jobjectArray>(
       env->GetObjectField(destTargetInfo, sTargetsField));
   for (int i = 0; i < std::min(numTargets, 3); ++i) {
@@ -243,6 +260,7 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
     env->SetDoubleField(targetObject, sHeightField, target.height);
   }
 }
+
   extern "C" void processFrameAndSetImage(JNIEnv *env, int tex1, int tex2, int w, int h,
                                int mode, int h_min, int h_max, int s_min,
                                int s_max, int v_min, int v_max, jbyte *out_dis,
@@ -255,42 +273,53 @@ extern "C" void processFrame(JNIEnv *env, int tex1, int tex2, int w, int h,
     ensureJniRegistered(env);
     env->SetIntField(destTargetInfo, sNumTargetsField, numTargets);
 
+    //Sets Up Timing Variable and Grabs Output Byte Array From JNI
     t = getTimeMs();
     jbyte *arr = env->GetByteArrayElements((jbyteArray) out_dis, NULL);
-
-    std::vector<unsigned char> buffer;
     cv::Mat tempMat(dis->rows, dis->cols, dis->type());
 
+    //https://stackoverflow.com/questions/14276655/passing-a-byte-array-from-jni-directly-in-android-bitmap
+    //https://stackoverflow.com/questions/16059389/pass-bitmap-reference-from-java-to-c
+    //https://stackoverflow.com/questions/23001512/c-and-opencv-get-and-set-pixel-color-to-mat
+    //https://stackoverflow.com/questions/4665122/android-pass-bitmap-to-native-in-2-1-and-lower
+
+    //Copies Over Individual Integer (Representing the Pixel) and Converts to ARGB, which Cv:imencode can turn to jpeg format
     for(int i = dis->rows - 1; i >= 0; i--) {
         for(int j = dis->cols - 1; j >= 0; j--) {
             tempMat.at<unsigned int>(dis->rows - i - 1, j) = colorRGBAToARGB(dis->at<unsigned int>(i,j));
         }
     }
-
     LOGD("Array Conversion Costs %d ms", getTimeInterval(t));
+
     t = getTimeMs();
-
+    //Converts Picture on Screen to jpeg format (so that it can be streamed over ip)
     cv::InputArray inputArray(tempMat);
+    std::vector<unsigned char> buffer;
     cv::imencode(".jpg", inputArray, buffer);
-
     int bufferSize = buffer.size();
     LOGD("Copying %d Entries", bufferSize);
 
+    //Copies Buffer Bytes to The Java-Side Array
     for(int i = 0; i < bufferSize; i++) {
         arr[i] = buffer[i];
     }
 
+    //Places a Size Integer at the End of the "Worse-Case Scenario" Sized Byte Array
     arr[w * h * 4] = (unsigned char) ((bufferSize & 0xff000000) >> 24);
     arr[w * h * 4 + 1] = (unsigned char) ((bufferSize & 0x00ff0000) >> 16);
     arr[w * h * 4 + 2] = (unsigned char) ((bufferSize & 0x0000ff00) >> 8);
     arr[w * h * 4 + 3] = (unsigned char) ((bufferSize & 0x000000ff));
 
+    //http://adndevblog.typepad.com/cloud_and_mobile/2013/08/android-ndk-passing-complex-data-to-jni.html
+
+    //Releases Java Array Back to Java
     env->ReleaseByteArrayElements((jbyteArray) out_dis, arr, 0);
     LOGD("Array Transfer Costs %d ms", getTimeInterval(t));
 
     if (numTargets == 0) {
       return;
     }
+    //Sends all of the Target Information to Java-Side Objects
     jobjectArray targetsArray = static_cast<jobjectArray>(
         env->GetObjectField(destTargetInfo, sTargetsField));
     for (int i = 0; i < std::min(numTargets, 3); ++i) {
