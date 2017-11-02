@@ -19,40 +19,67 @@ package com.team254.cheezdroid;
 import android.app.Activity;
 import android.os.Bundle;
 
-public class SelfieActivity extends Activity implements RobotEventListener {
-
+/**
+ * 'Selfie' Activity - Runs 'SelfieModeFragment', which allows the User to Call for A Picture Externally
+ */
+public class SelfieActivity extends Activity implements RobotEventListener
+{
     RobotEventBroadcastReceiver rebr;
 
-
+    /**
+     * 'Selfie' Activity Constructor - Instantiates RobotEventBroadcastReceiver
+     * @param savedInstanceState - Android Instance State (Past Runs)
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         rebr = new RobotEventBroadcastReceiver(this, this);
-        if (null == savedInstanceState) {
+        if (null == savedInstanceState)
+        {
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, SelfieModeFragment.newInstance())
                     .commit();
         }
     }
 
+
+    /**
+     * Implemented Method From RobotEventListener - Unused
+     */
     @Override
-    public void shotTaken() {
+    public void shotTaken()
+    {
 
     }
 
+    /**
+     * Implemented Method From RobotEventListener
+     * This is the Only One That is Actually Used - Cleans Up When Vision is Wanted
+     */
     @Override
-    public void wantsVisionMode() {
+    public void wantsVisionMode()
+    {
         finish();
     }
 
+    /**
+     * Implemented Method From RobotEventListener - Unused
+     */
     @Override
-    public void wantsIntakeMode() {
+    public void wantsIntakeMode()
+    {
 
     }
 
+    /**
+     * Android Activity onDestroy Lifetime Cycle Method
+     * Calls Super and 'Unregisters' The 'Receiver'
+     */
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         super.onDestroy();
         unregisterReceiver(rebr);
     }

@@ -44,7 +44,9 @@ import org.florescu.android.rangeseekbar.RangeSeekBar;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class VisionTrackerActivity extends Activity implements RobotConnectionStateListener, RobotEventListener {
+//TODO: Add Documentation and Commenting to this Class
+public class VisionTrackerActivity extends Activity implements RobotConnectionStateListener, RobotEventListener
+{
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
 
@@ -65,24 +67,28 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 
     private boolean mIsRunning;
 
-    public static boolean isLocked() {
+    public static boolean isLocked()
+    {
         return sLocked;
     }
 
 
     @Override
-    public void shotTaken() {
+    public void shotTaken()
+    {
         Log.i("VisionActivity", "Shot taken");
         playAirhorn();
     }
 
     @Override
-    public void wantsVisionMode() {
+    public void wantsVisionMode()
+    {
 
     }
 
     @Override
-    public void wantsIntakeMode() {
+    public void wantsIntakeMode()
+    {
 //        if (mIsRunning && (System.currentTimeMillis() - mLastSelfieLaunch > 1000)) {
 //            Intent i = new Intent();
 //            i.setClass(VisionTrackerActivity.this, SelfieActivity.class);
@@ -91,9 +97,10 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 //        }
     }
 
-    private class PowerStateBroadcastReceiver extends BroadcastReceiver {
-
-        public PowerStateBroadcastReceiver(VisionTrackerActivity activity) {
+    private class PowerStateBroadcastReceiver extends BroadcastReceiver
+    {
+        public PowerStateBroadcastReceiver(VisionTrackerActivity activity)
+        {
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(Intent.ACTION_POWER_CONNECTED);
             intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
@@ -101,10 +108,13 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
 
         @Override
-        public void onReceive(Context context, Intent intent) {
-            VisionTrackerActivity.this.runOnUiThread(new Runnable() {
+        public void onReceive(Context context, Intent intent)
+        {
+            VisionTrackerActivity.this.runOnUiThread(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     updateBatteryText();
                 }
             });
@@ -115,27 +125,33 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     /**
      * Shows OK/Cancel confirmation dialog about camera permission.
      */
-    public static class ConfirmationDialog extends DialogFragment {
-
+    public static class ConfirmationDialog extends DialogFragment
+    {
         @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
+        public Dialog onCreateDialog(Bundle savedInstanceState)
+        {
             final Fragment parent = getParentFragment();
             return new AlertDialog.Builder(getActivity())
                     .setMessage(R.string.request_permission)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+                    {
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
+                        public void onClick(DialogInterface dialog, int which)
+                        {
                             ActivityCompat.requestPermissions(parent.getActivity(),
                                     new String[]{Manifest.permission.CAMERA},
                                     REQUEST_CAMERA_PERMISSION);
                         }
                     })
                     .setNegativeButton(android.R.string.cancel,
-                            new DialogInterface.OnClickListener() {
+                            new DialogInterface.OnClickListener()
+                            {
                                 @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                                public void onClick(DialogInterface dialog, int which)
+                                {
                                     Activity activity = parent.getActivity();
-                                    if (activity != null) {
+                                    if (activity != null)
+                                    {
                                         activity.finish();
                                     }
                                 }
@@ -144,11 +160,13 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
-    public static class ErrorDialog extends DialogFragment {
+    public static class ErrorDialog extends DialogFragment
+    {
 
         private static final String ARG_MESSAGE = "message";
 
-        public static ErrorDialog newInstance(String message) {
+        public static ErrorDialog newInstance(String message)
+        {
             ErrorDialog dialog = new ErrorDialog();
             Bundle args = new Bundle();
             args.putString(ARG_MESSAGE, message);
@@ -157,13 +175,16 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
 
         @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
+        public Dialog onCreateDialog(Bundle savedInstanceState)
+        {
             final Activity activity = getActivity();
             return new AlertDialog.Builder(activity)
                     .setMessage(getArguments().getString(ARG_MESSAGE))
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+                    {
                         @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                        public void onClick(DialogInterface dialogInterface, int i)
+                        {
                             activity.finish();
                         }
                     })
@@ -172,45 +193,57 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 
     }
 
-    private void requestCameraPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+    private void requestCameraPermission()
+    {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))
+        {
             new ConfirmationDialog().show(this.getFragmentManager(), FRAGMENT_DIALOG);
-        } else {
+        }
+        else
+        {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
                     REQUEST_CAMERA_PERMISSION);
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ErrorDialog.newInstance(getString(R.string.request_permission))
-                        .show(getFragmentManager(), FRAGMENT_DIALOG);
-            } else {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        if (requestCode == REQUEST_CAMERA_PERMISSION)
+        {
+            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED)
+            {
+                ErrorDialog.newInstance(getString(R.string.request_permission)).show(getFragmentManager(), FRAGMENT_DIALOG);
+            }
+            else
+            {
                 tryStartCamera();
             }
-        } else {
+        }
+        else
+        {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
     @Override
-    protected void onStart() {
+    protected void onStart()
+    {
         super.onStart();
         mIsRunning = true;
         Log.i("VisionActivity", "onStart");
     }
 
     @Override
-    protected void onRestart() {
+    protected void onRestart()
+    {
         super.onRestart();
         Log.i("VisionActivity", "onRestart");
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -242,46 +275,35 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         // Listen for power events
         mPbr = new PowerStateBroadcastReceiver(this);
 
-        if (sLocked) {
+        if (sLocked)
+        {
             setLockOn();
-        } else {
+        }
+        else
+        {
             setLockOff();
         }
 
-        mLockButton.setOnClickListener(new View.OnClickListener() {
+        mLockButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
-                if (!sLocked) {
+            public void onClick(View v)
+            {
+                if (!sLocked)
+                {
                     setLockOn();
                 }
             }
         });
-        mLockButton.setOnLongClickListener(new View.OnLongClickListener() {
+        mLockButton.setOnLongClickListener(new View.OnLongClickListener()
+        {
             @Override
-            public boolean onLongClick(View v) {
-                if (sLocked) {
+            public boolean onLongClick(View v)
+            {
+                if (sLocked)
+                {
                     setLockOff();
-                    /*
-                    09-14 16:06:11.656 21964-21964/com.team254.cheezdroid E/AndroidRuntime: FATAL EXCEPTION: main
-                                                                        Process: com.team254.cheezdroid, PID: 21964
-                                                                        java.lang.NullPointerException: Attempt to read from field 'android.content.Intent com.android.server.am.TaskRecord.intent' on a null object reference
-                                                                            at android.os.Parcel.readException(Parcel.java:1546)
-                                                                            at android.os.Parcel.readException(Parcel.java:1493)
-                                                                            at android.app.ActivityManagerProxy.stopLockTaskMode(ActivityManagerNative.java:5331)
-                                                                            at android.app.Activity.stopLockTask(Activity.java:6266)
-                                                                            at com.team254.cheezdroid.VisionTrackerActivity.setLockOff(VisionTrackerActivity.java:507)
-                                                                            at com.team254.cheezdroid.VisionTrackerActivity$2.onLongClick(VisionTrackerActivity.java:262)
-                                                                            at android.view.View.performLongClick(View.java:4803)
-                                                                            at android.view.View$CheckForLongPress.run(View.java:19818)
-                                                                            at android.os.Handler.handleCallback(Handler.java:739)
-                                                                            at android.os.Handler.dispatchMessage(Handler.java:95)
-                                                                            at android.os.Looper.loop(Looper.java:135)
-                                                                            at android.app.ActivityThread.main(ActivityThread.java:5351)
-                                                                            at java.lang.reflect.Method.invoke(Native Method)
-                                                                            at java.lang.reflect.Method.invoke(Method.java:372)
-                                                                            at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:908)
-                                                                            at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:703)
-                                                                            */
+                    //TODO: Solve java.lang.NullPointerException: Attempt to read from field 'android.content.Intent com.android.server.am.TaskRecord.intent' on a null object reference
                     return true;
                 }
                 return false;
@@ -295,9 +317,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         Log.i("VisionActivity", "onCreate");
     }
 
-    private void tryStartCamera() {
+    private void tryStartCamera()
+    {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED)
+        {
             requestCameraPermission();
             return;
         }
@@ -308,20 +332,25 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mProcMode = (TextView) findViewById(R.id.proc_mode_text_view);
         mView.setProcessingMode(NativePart.DISP_MODE_TARGETS_PLUS);
         MjpgServer.getInstance().pause();
-        runOnUiThread(new Runnable() {
-            public void run() {
+        runOnUiThread(new Runnable()
+        {
+            public void run()
+            {
                 updateProcModeText();
             }
         });
     }
 
     @Override
-    protected void onPause() {
+    protected void onPause()
+    {
         Log.i("VisionTrackerActivity", "onPause");
-        if (mView != null) {
+        if (mView != null)
+        {
             mView.onPause();
         }
-        if (mUpdateViewTimer != null) {
+        if (mUpdateViewTimer != null)
+        {
             mUpdateViewTimer.cancel();
             mUpdateViewTimer = null;
         }
@@ -330,19 +359,25 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         Log.i("VisionActivity", "onResume " + mView);
         super.onResume();
-        if (mView != null) {
+        if (mView != null)
+        {
             mView.onResume();
         }
         mUpdateViewTimer = new Timer();
-        mUpdateViewTimer.schedule(new TimerTask() {
+        mUpdateViewTimer.schedule(new TimerTask()
+        {
             @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
+            public void run()
+            {
+                runOnUiThread(new Runnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         updateBatteryText();
                     }
                 });
@@ -352,19 +387,23 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
-    public void showViewOptions(View v) {
+    public void showViewOptions(View v)
+    {
         mView.openOptionsMenu();
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
             case R.id.raw:
                 mView.setProcessingMode(NativePart.DISP_MODE_RAW);
                 break;
@@ -380,16 +419,19 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             default:
                 return false;
         }
-        runOnUiThread(new Runnable() {
+        runOnUiThread(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
                 updateProcModeText();
             }
         });
         return true;
     }
 
-    public void openBottomSheet(View v) {
+    public void openBottomSheet(View v)
+    {
         View view = getLayoutInflater().inflate(R.layout.hsv_bottom_sheet, null);
         LinearLayout container = (LinearLayout) view.findViewById(R.id.popup_window);
         container.getBackground().setAlpha(20);
@@ -404,9 +446,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 
         final RangeSeekBar hSeekBar = (RangeSeekBar) view.findViewById(R.id.hSeekBar);
         setSeekBar(hSeekBar, getHRange());
-        hSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>() {
+        hSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>()
+        {
             @Override
-            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max) {
+            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max)
+            {
                 Log.i("H", min + " " + max);
                 m_prefs.setThresholdHRange(min, max);
             }
@@ -414,9 +458,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 
         final RangeSeekBar sSeekBar = (RangeSeekBar) view.findViewById(R.id.sSeekBar);
         setSeekBar(sSeekBar, getSRange());
-        sSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>() {
+        sSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>()
+        {
             @Override
-            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max) {
+            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max)
+            {
                 Log.i("S", min + " " + max);
                 m_prefs.setThresholdSRange(min, max);
             }
@@ -424,18 +470,22 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 
         final RangeSeekBar vSeekBar = (RangeSeekBar) view.findViewById(R.id.vSeekBar);
         setSeekBar(vSeekBar, getVRange());
-        vSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>() {
+        vSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>()
+        {
             @Override
-            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max) {
+            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max)
+            {
                 Log.i("V", min + " " + max);
                 m_prefs.setThresholdVRange(min, max);
             }
         });
 
         Button restoreButton = (Button) view.findViewById(R.id.restoreDefaultsButton);
-        restoreButton.setOnClickListener(new View.OnClickListener() {
+        restoreButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 m_prefs.restoreDefaults();
                 setSeekBar(hSeekBar, getHRange());
                 setSeekBar(sSeekBar, getSRange());
@@ -444,25 +494,30 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         });
     }
 
-    private static void setSeekBar(RangeSeekBar<Integer> bar, Pair<Integer, Integer> values) {
+    private static void setSeekBar(RangeSeekBar<Integer> bar, Pair<Integer, Integer> values)
+    {
         bar.setSelectedMinValue(values.first);
         bar.setSelectedMaxValue(values.second);
     }
 
-    public Pair<Integer, Integer> getHRange() {
+    public Pair<Integer, Integer> getHRange()
+    {
         return m_prefs.getThresholdHRange();
     }
 
-    public Pair<Integer, Integer> getSRange() {
+    public Pair<Integer, Integer> getSRange()
+    {
         return m_prefs.getThresholdSRange();
     }
 
-    public Pair<Integer, Integer> getVRange() {
+    public Pair<Integer, Integer> getVRange()
+    {
         return m_prefs.getThresholdVRange();
     }
 
     @Override
-    public void robotConnected() {
+    public void robotConnected()
+    {
         Log.i("MainActivity", "Robot Connected");
         mView.setRobotConnection(AppContext.getRobotConnection());
         connectionStateView.setBackgroundColor(ContextCompat.getColor(this, R.color.cheesy_poof_blue));
@@ -470,14 +525,16 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         super.onDestroy();
         unregisterReceiver(rbr);
         unregisterReceiver(mPbr);
         unregisterReceiver(rer);
     }
 
-    public void startBadConnectionAnimation() {
+    public void startBadConnectionAnimation()
+    {
         Animation animation = new ScaleAnimation(1, 1, 1, 20, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
         animation.setDuration(200);
         animation.setInterpolator(new LinearInterpolator());
@@ -486,23 +543,29 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         connectionStateView.startAnimation(animation);
     }
 
-    public void stopBadConnectionAnimation() {
+    public void stopBadConnectionAnimation()
+    {
         connectionStateView.clearAnimation();
     }
 
     @Override
-    public void robotDisconnected() {
+    public void robotDisconnected()
+    {
         Log.i("MainActivity", "Robot Disconnected");
         mView.setRobotConnection(null);
         connectionStateView.setBackgroundColor(ContextCompat.getColor(this, R.color.holo_red_light));
-        if (isLocked()) {
+        if (isLocked())
+        {
             startBadConnectionAnimation();
-        } else {
+        }
+        else
+        {
             stopBadConnectionAnimation();
         }
     }
 
-    public void setLockOn() {
+    public void setLockOn()
+    {
         sLocked = true;
         mLockButton.setImageResource(R.drawable.locked);
         mLockButton.clearAnimation();
@@ -513,7 +576,8 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         startLockTask();
     }
 
-    public void setLockOff() {
+    public void setLockOff()
+    {
         sLocked = false;
         mPrefsButton.setVisibility(View.VISIBLE);
         mViewTypeButton.setVisibility(View.VISIBLE);
@@ -530,22 +594,26 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         stopBadConnectionAnimation();
     }
 
-    private void whitelistLockTasks() {
+    private void whitelistLockTasks()
+    {
         DevicePolicyManager manager =
                 (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
 
-        if (manager.isDeviceOwnerApp(getPackageName())) {
+        if (manager.isDeviceOwnerApp(getPackageName()))
+        {
             manager.setLockTaskPackages(componentName, new String[]{getPackageName()});
         }
     }
 
-    private void enableDeviceAdmin() {
+    private void enableDeviceAdmin()
+    {
         DevicePolicyManager manager =
                 (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
 
-        if(!manager.isAdminActive(componentName)) {
+        if(!manager.isAdminActive(componentName))
+        {
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
             startActivityForResult(intent, 0);
@@ -554,7 +622,8 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
+    public void onWindowFocusChanged(boolean hasFocus)
+    {
         super.onWindowFocusChanged(hasFocus);
         if(!hasFocus && sLocked) {
             // Close every kind of system dialog
@@ -563,7 +632,8 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
-    private void updateBatteryText() {
+    private void updateBatteryText()
+    {
         Intent batteryStatus =
                 registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
@@ -576,16 +646,20 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mChargingIcon.setVisibility(isCharging ? View.VISIBLE : View.GONE);
     }
 
-    private void updateProcModeText() {
+    private void updateProcModeText()
+    {
         mProcMode.setText("Proc Mode: "
                 + VisionTrackerGLSurfaceView.PROC_MODE_NAMES[mView.getProcessingMode()]);
     }
 
-    public void playAirhorn() {
+    public void playAirhorn()
+    {
         MediaPlayer mp = MediaPlayer.create(this, R.raw.airhorn);
-        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+        {
             @Override
-            public void onCompletion(MediaPlayer mp) {
+            public void onCompletion(MediaPlayer mp)
+            {
                 mp.reset();
                 mp.release();
             }

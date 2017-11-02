@@ -25,8 +25,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener {
-
+public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener
+{
     //String Variables
     //TODO: Reorganize into a Configuration File
     static final String LOGTAG = "VTGLSurfaceView";
@@ -59,7 +59,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Instantiates a List of Camera Settings and Fills it into a 'BetterCamera2Renderer.Settings'
      * @return settings - A List of Camera Settings
      */
-    static BetterCamera2Renderer.Settings getCameraSettings() {
+    static BetterCamera2Renderer.Settings getCameraSettings()
+    {
         BetterCamera2Renderer.Settings settings = new BetterCamera2Renderer.Settings();
         settings.height = kHeight;
         settings.width = kWidth;
@@ -79,7 +80,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Static Creates a New Pair
      * @return A New Pair of Two Integers (0, 255)
      */
-    private static Pair<Integer, Integer> blankPair() {
+    private static Pair<Integer, Integer> blankPair()
+    {
         return new Pair<Integer, Integer>(0, 255);
     }
 
@@ -89,7 +91,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * @param context - Android 'Context' from an Activity
      * @param attrs - Attributes
      */
-    public VisionTrackerGLSurfaceView(Context context, AttributeSet attrs) {
+    public VisionTrackerGLSurfaceView(Context context, AttributeSet attrs)
+    {
         super(context, attrs, getCameraSettings());
         byteArraySwitch = true;
     }
@@ -97,7 +100,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     /**
      * Passes Along An openOptionsMenu to the Context
      */
-    public void openOptionsMenu() {
+    public void openOptionsMenu()
+    {
         ((Activity) getContext()).openOptionsMenu();
     }
 
@@ -106,7 +110,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * @param holder - Holder for the Surface in the SurfaceView
      */
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(SurfaceHolder holder)
+    {
         super.surfaceCreated(holder);
     }
 
@@ -115,7 +120,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * @param holder - Holder for the Surface in the SurfaceView
      */
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public void surfaceDestroyed(SurfaceHolder holder)
+    {
         super.surfaceDestroyed(holder);
     }
 
@@ -135,7 +141,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Sets Robot Connection (robotConnection)
      * @param robotConnection - New RobotConnection
      */
-    public void setRobotConnection(RobotConnection robotConnection) {
+    public void setRobotConnection(RobotConnection robotConnection)
+    {
         mRobotConnection = robotConnection;
     }
 
@@ -143,7 +150,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Sets Preferences (m_prefs)
      * @param prefs - New Preference
      */
-    public void setPreferences(Preferences prefs) {
+    public void setPreferences(Preferences prefs)
+    {
         m_prefs = prefs;
     }
 
@@ -151,7 +159,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Returns the Local Vision Processing Mode (Kind of View)
      * @return procMode - The Current Processing Mode
      */
-    public int getProcessingMode() {
+    public int getProcessingMode()
+    {
         return procMode;
     }
 
@@ -161,9 +170,12 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * @param height - the height of the frames that will be delivered
      */
     @Override
-    public void onCameraViewStarted(int width, int height) {
-        ((Activity) getContext()).runOnUiThread(new Runnable() {
-            public void run() {
+    public void onCameraViewStarted(int width, int height)
+    {
+        ((Activity) getContext()).runOnUiThread(new Runnable()
+        {
+            public void run()
+            {
                 Toast.makeText(getContext(), "onCameraViewStarted", Toast.LENGTH_SHORT).show();
             }
         });
@@ -176,9 +188,12 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Tells the User that the Camera View Stopped
      */
     @Override
-    public void onCameraViewStopped() {
-        ((Activity) getContext()).runOnUiThread(new Runnable() {
-            public void run() {
+    public void onCameraViewStopped()
+    {
+        ((Activity) getContext()).runOnUiThread(new Runnable()
+        {
+            public void run()
+            {
                 Toast.makeText(getContext(), "onCameraViewStopped", Toast.LENGTH_SHORT).show();
             }
         });
@@ -194,21 +209,28 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * @return Result of the Texture (true)
      */
     @Override
-    public boolean onCameraTexture(int texIn, int texOut, int width, int height, long image_timestamp) {
+    public boolean onCameraTexture(int texIn, int texOut, int width, int height, long image_timestamp)
+    {
         Log.d(LOGTAG, "onCameraTexture - Timestamp " + image_timestamp + ", current time " + System.nanoTime() / 1E9);
         //FPS Counter Incrementer
         frameCounter++;
-        if (frameCounter >= 30) {
+        if (frameCounter >= 30)
+        {
             final int fps = (int) (frameCounter * 1e9 / (System.nanoTime() - lastNanoTime));
             Log.i(LOGTAG, "drawFrame() FPS: " + fps);
-            if (mFpsText != null) {
-                Runnable fpsUpdater = new Runnable() {
-                    public void run() {
+            if (mFpsText != null)
+            {
+                Runnable fpsUpdater = new Runnable()
+                {
+                    public void run()
+                    {
                         mFpsText.setText("FPS: " + fps);
                     }
                 };
                 new Handler(Looper.getMainLooper()).post(fpsUpdater);
-            } else {
+            }
+            else
+            {
                 Log.d(LOGTAG, "mFpsText == null");
                 mFpsText = (TextView) ((Activity) getContext()).findViewById(R.id.fps_text_view);
             }
@@ -245,7 +267,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         MjpgServer.getInstance().update(Arrays.copyOfRange(byteArray, 0, lengthOfByteArray));
         Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
 
-        for (int i = 0; i < targetsInfo.numTargets; ++i) {
+        for (int i = 0; i < targetsInfo.numTargets; ++i)
+        {
             NativePart.TargetsInfo.Target target = targetsInfo.targets[i];
 
             //TODO: Find the Application of this Conversion.  What does it do to Vision Processing?
@@ -260,7 +283,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
             visionUpdate.addCameraTargetInfo(new CameraTargetInfo(y, z));
         }
 
-        if (mRobotConnection != null) {
+        if (mRobotConnection != null)
+        {
             TargetUpdateMessage update = new TargetUpdateMessage(visionUpdate, System.nanoTime());
             mRobotConnection.send(update);
         }

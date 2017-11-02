@@ -5,32 +5,58 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
 
-public class OnScreenOffReceiver extends BroadcastReceiver {
+/**
+ * Manages The Broadcast Based on Phone State
+ */
+public class OnScreenOffReceiver extends BroadcastReceiver
+{
+    /**
+     * When a Broadcast is Recieved
+     * @param context - Android Context
+     * @param intent - Purpose / Message of the Method Call
+     */
     @Override
-    public void onReceive(Context context, Intent intent) {
-        if(Intent.ACTION_SCREEN_OFF.equals(intent.getAction())){
+    public void onReceive(Context context, Intent intent)
+    {
+        if(Intent.ACTION_SCREEN_OFF.equals(intent.getAction()))
+        {
             AppContext ctx = (AppContext) context.getApplicationContext();
             // is Kiosk Mode active?
-            if(shouldStayAwake()) {
+            if(shouldStayAwake())
+            {
                 wakeUpDevice(ctx);
             }
         }
     }
 
-    private void wakeUpDevice(AppContext context) {
-        PowerManager.WakeLock wakeLock = context.getWakeLock(); // get WakeLock reference via AppContext
-        if (wakeLock.isHeld()) {
-            wakeLock.release(); // release old wake lock
+    /**
+     * Attempts to Wake the Device
+     * @param context - Android Context
+     */
+    private void wakeUpDevice(AppContext context)
+    {
+        //Get WakeLock Reference via AppContext
+        PowerManager.WakeLock wakeLock = context.getWakeLock();
+        if (wakeLock.isHeld())
+        {
+            //Release Old WakeLock
+            wakeLock.release();
         }
 
-        // create a new wake lock...
+        //Create a new wake lock...
+        //TODO: Should Give Max Time For WakeLock
         wakeLock.acquire();
 
-        // ... and release again
+        //... and Release Again
         wakeLock.release();
     }
 
-    private boolean shouldStayAwake() {
+    /**
+     * If the VisionTrackerActivity is Currently Locked
+     * @return If the VisionTrackerActivity is Currently Locked
+     */
+    private boolean shouldStayAwake()
+    {
         return VisionTrackerActivity.isLocked();
     }
 }
