@@ -25,6 +25,9 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 
+/**
+ *
+ */
 public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener
 {
     //String Variables
@@ -242,19 +245,11 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         Pair<Integer, Integer> sRange = m_prefs != null ? m_prefs.getThresholdSRange() : blankPair();
         Pair<Integer, Integer> vRange = m_prefs != null ? m_prefs.getThresholdVRange() : blankPair();
 
-        //Runs the Native C++ Code (See jni.c -> image_processor.cpp
+        //Runs the Native C++ Code (See jni.c -> image_processor.cpp)
         //Switches Between Two Arrays to Be Filled by the Process Frame and Set Image C++ Method
         //TODO: Add Option to Not Send Image
-        if(byteArraySwitch)
-        {
-            NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
-                    sRange.first, sRange.second, vRange.first, vRange.second, bufferA.array(), targetsInfo);
-        }
-        else
-        {
-            NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
-                    sRange.first, sRange.second, vRange.first, vRange.second, bufferB.array(), targetsInfo);
-        }
+        NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
+                sRange.first, sRange.second, vRange.first, vRange.second, byteArraySwitch ? bufferA.array() : bufferB.array(), targetsInfo);
         byteArraySwitch = !byteArraySwitch;
 
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
@@ -271,13 +266,19 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         {
             NativePart.TargetsInfo.Target target = targetsInfo.targets[i];
 
-            //TODO: Find the Application of this Conversion.  What does it do to Vision Processing?
-            //https://stackoverflow.com/questions/29199480/what-is-the-use-of-homogeneous-vectors-in-computer-vision
-            // Convert to a homogeneous 3d vector with x = 1
-            //double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
-            //double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
-            double y = target.centroidX;
-            double z = target.centroidY;
+            /**
+             * "Convert to a homogeneous 3d vector with x = 1
+             * This is a seemingly strange operation, but it actually allows for some pretty neat vision operations
+             * Basically, it is treated like a vector so (only y and z, since x is distance (scale) in their model)
+             * @see "https://stackoverflow.com/questions/29199480/what-is-the-use-of-homogeneous-vectors-in-computer-vision"
+             * @see "https://prateekvjoshi.com/2014/06/13/the-concept-of-homogeneous-coordinates/"
+             *
+             * Uncomment the two lnes after y and z if youu want to deal with pixels, not vectors
+             */
+            double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
+            double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
+            //double y = target.centroidX;
+            //double z = target.centroidY;
 
             Log.i(LOGTAG, "Target at: " + y + ", " + z);
             visionUpdate.addCameraTargetInfo(new CameraTargetInfo(y, z));
