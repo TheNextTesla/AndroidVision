@@ -45,6 +45,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 //TODO: Add Documentation and Commenting to this Class
+
+/**
+ * Activity (Basically the Main Activity) that Has
+ */
 public class VisionTrackerActivity extends Activity implements RobotConnectionStateListener, RobotEventListener
 {
     private static final int REQUEST_CAMERA_PERMISSION = 1;
@@ -67,12 +71,20 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 
     private boolean mIsRunning;
 
+    /**
+     * If the Activity is "Locked" (Pinned and Settings are Not Visible)
+     * @return If the Activity is "Locked" (Pinned and Settings are Not Visible)
+     */
     public static boolean isLocked()
     {
         return sLocked;
     }
 
-
+    /**
+     * Method that Runs (Implementing RobotEventListener) Whenever 'Shot Taken'
+     * Runs Based on a Android 'Broadcast' Setup
+     * @see RobotEventListener
+     */
     @Override
     public void shotTaken()
     {
@@ -80,12 +92,22 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         playAirhorn();
     }
 
+    /**
+     * Method that Runs (Implementing RobotEventListener) Whenever The Computer 'Wants Vision Mode'
+     * Runs Based on a Android 'Broadcast' Setup
+     * @see RobotEventListener
+     */
     @Override
     public void wantsVisionMode()
     {
 
     }
 
+    /**
+     * Method that Runs (Implementing RobotEventListener) Whenever The Computer 'Wants Intake Mode'
+     * Runs Based on a Android 'Broadcast' Setup
+     * @see RobotEventListener
+     */
     @Override
     public void wantsIntakeMode()
     {
@@ -97,8 +119,15 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
 //        }
     }
 
+    /**
+     * Enclosed Class that Runs Methods When the Power Source Changes
+     */
     private class PowerStateBroadcastReceiver extends BroadcastReceiver
     {
+        /**
+         * Setup the Android Intent Filer Callbacks
+         * @param activity - The Vision Activity (enclosing class)
+         */
         public PowerStateBroadcastReceiver(VisionTrackerActivity activity)
         {
             IntentFilter intentFilter = new IntentFilter();
@@ -107,6 +136,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             activity.registerReceiver(this, intentFilter);
         }
 
+        /**
+         * Updates the Battery Text When The Power Source Changes
+         * @param context - Android Context
+         * @param intent - Purpose / Message of the Call
+         */
         @Override
         public void onReceive(Context context, Intent intent)
         {
@@ -120,6 +154,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             });
         }
     }
+
     private PowerStateBroadcastReceiver mPbr;
 
     /**
@@ -160,11 +195,18 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
+    /**
+     * Enclosed Dialog Class that Shows a Simple Error Popup
+     */
     public static class ErrorDialog extends DialogFragment
     {
-
         private static final String ARG_MESSAGE = "message";
 
+        /**
+         *
+         * @param message - String Message to Be Stored and Displayed in the Error Dialog
+         * @return An Error Dialog Instance
+         */
         public static ErrorDialog newInstance(String message)
         {
             ErrorDialog dialog = new ErrorDialog();
@@ -174,6 +216,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             return dialog;
         }
 
+        /**
+         * Runs and Sets Up a Dialog
+         * @param savedInstanceState - Android Bundle / Past Info
+         * @return A Dialog
+         */
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState)
         {
@@ -190,9 +237,12 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
                     })
                     .create();
         }
-
     }
 
+    /**
+     * Makes Sure that the Application has the Necessary Camera Permission (Newer Android Version Standard)
+     * TODO: Bug - On the first run, after giving it the necessary permission, the camera is still blank until restart
+     */
     private void requestCameraPermission()
     {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA))
@@ -206,6 +256,12 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
+    /**
+     * Reacts the User Input of When the Camera Permissions are Called
+     * @param requestCode - Code to Determine Which Permissions Callback Is It
+     * @param permissions - String Array of Permission
+     * @param grantResults - Results Integer Array
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
@@ -226,6 +282,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
+    /**
+     * Android Lifecycle for When the Activity Starts
+     */
     @Override
     protected void onStart()
     {
@@ -234,6 +293,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         Log.i("VisionActivity", "onStart");
     }
 
+    /**
+     * Android Lifecycle for When the Activity Restarts
+     */
     @Override
     protected void onRestart()
     {
@@ -241,6 +303,10 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         Log.i("VisionActivity", "onRestart");
     }
 
+    /**
+     * Android Lifecycle Creation
+     * @param savedInstanceState - Android Saved Activity State
+     */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -295,6 +361,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
                 }
             }
         });
+
         mLockButton.setOnLongClickListener(new View.OnLongClickListener()
         {
             @Override
@@ -317,6 +384,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         Log.i("VisionActivity", "onCreate");
     }
 
+    /**
+     * Attempts to Start the Camera, Nothing Otherwise
+     */
     private void tryStartCamera()
     {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -331,6 +401,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         TextView tv = (TextView) findViewById(R.id.fps_text_view);
         mProcMode = (TextView) findViewById(R.id.proc_mode_text_view);
         mView.setProcessingMode(NativePart.DISP_MODE_TARGETS_PLUS);
+        //TODO: MjpegServer Pause?
         MjpgServer.getInstance().pause();
         runOnUiThread(new Runnable()
         {
@@ -341,6 +412,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         });
     }
 
+    /**
+     * Android Lifecycle - What to do When the Application is Paused
+     */
     @Override
     protected void onPause()
     {
@@ -358,6 +432,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         super.onPause();
     }
 
+    /**
+     * Android Lifecycle - What to do When the Application is Resumed
+     */
     @Override
     protected void onResume()
     {
@@ -386,6 +463,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mIsRunning = true;
     }
 
+    /**
+     * Allows the Options Menu to Open Up
+     * @param menu - The Menu to Be Inflated
+     * @return The Boolean From Super
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -394,11 +476,20 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Opens the Option Menu, Without Regard to View
+     * @param v - View (Ignored)
+     */
     public void showViewOptions(View v)
     {
         mView.openOptionsMenu();
     }
 
+    /**
+     * Runs Whenever the Vision Mode Menu Changes
+     * @param item - Menu Item Selected
+     * @return Simple Boolean
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -419,6 +510,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             default:
                 return false;
         }
+
         runOnUiThread(new Runnable()
         {
             @Override
@@ -430,12 +522,15 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         return true;
     }
 
+    /**
+     * Method That Opens the HSV Settings Change Panel Over As An Overlay of the Display
+     * @param v - View (Not Really Used, But Needed for the Method to be Valid for this Kind of Stuff)
+     */
     public void openBottomSheet(View v)
     {
         View view = getLayoutInflater().inflate(R.layout.hsv_bottom_sheet, null);
         LinearLayout container = (LinearLayout) view.findViewById(R.id.popup_window);
         container.getBackground().setAlpha(20);
-
 
         final Dialog mBottomSheetDialog = new Dialog(VisionTrackerActivity.this, R.style.MaterialDialogSheet);
         mBottomSheetDialog.setContentView(view);
@@ -444,6 +539,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
         mBottomSheetDialog.show();
 
+        //Changes the OpenCV Color Range H Value Based on User Changes
         final RangeSeekBar hSeekBar = (RangeSeekBar) view.findViewById(R.id.hSeekBar);
         setSeekBar(hSeekBar, getHRange());
         hSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>()
@@ -456,6 +552,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             }
         });
 
+        //Changes the OpenCV Color Range S Value Based on User Changes
         final RangeSeekBar sSeekBar = (RangeSeekBar) view.findViewById(R.id.sSeekBar);
         setSeekBar(sSeekBar, getSRange());
         sSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>()
@@ -468,6 +565,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             }
         });
 
+        //Changes the OpenCV Color Range V Value Based on User Changes
         final RangeSeekBar vSeekBar = (RangeSeekBar) view.findViewById(R.id.vSeekBar);
         setSeekBar(vSeekBar, getVRange());
         vSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>()
@@ -480,6 +578,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             }
         });
 
+        //Button that Restores the XML Defined Default Settings
         Button restoreButton = (Button) view.findViewById(R.id.restoreDefaultsButton);
         restoreButton.setOnClickListener(new View.OnClickListener()
         {
@@ -494,27 +593,48 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         });
     }
 
+    /**
+     * Places a Specified SeekBar to a Min and Max Value Pair
+     * @param bar - SeekerBar to be Set
+     * @param values - Pair of Values to Set the Bar to
+     */
     private static void setSeekBar(RangeSeekBar<Integer> bar, Pair<Integer, Integer> values)
     {
         bar.setSelectedMinValue(values.first);
         bar.setSelectedMaxValue(values.second);
     }
 
+    /**
+     * Gets the Current H Value Setting Range - Really Just A Simple Wrapper for One Function
+     * @return A Pair of Integers Representing the Max and Min of the Range
+     */
     public Pair<Integer, Integer> getHRange()
     {
         return m_prefs.getThresholdHRange();
     }
 
+    /**
+     * Gets the Current S Value Setting Range - Really Just A Simple Wrapper for One Function
+     * @return A Pair of Integers Representing the Max and Min of the Range
+     */
     public Pair<Integer, Integer> getSRange()
     {
         return m_prefs.getThresholdSRange();
     }
 
+    /**
+     * Gets the Current V Value Setting Range - Really Just A Simple Wrapper for One Function
+     * @return A Pair of Integers Representing the Max and Min of the Range
+     */
     public Pair<Integer, Integer> getVRange()
     {
         return m_prefs.getThresholdVRange();
     }
 
+    /**
+     * Reaction to the Robot Become Connected (Responsible for the Color Color Change)
+     * @see RobotConnectionStateListener
+     */
     @Override
     public void robotConnected()
     {
@@ -524,6 +644,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         stopBadConnectionAnimation();
     }
 
+    /**
+     * Android Lifecycle Method - Stops All the Method Broadcast Receiver Callbacks
+     */
     @Override
     protected void onDestroy()
     {
@@ -533,6 +656,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         unregisterReceiver(rer);
     }
 
+    /**
+     * Starts the (Very Irritating) Animation that Occurs Whenever the Connection is Considered Bad
+     */
     public void startBadConnectionAnimation()
     {
         Animation animation = new ScaleAnimation(1, 1, 1, 20, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
@@ -543,11 +669,18 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         connectionStateView.startAnimation(animation);
     }
 
+    /**
+     * Stops the Above Animation Effect
+     */
     public void stopBadConnectionAnimation()
     {
         connectionStateView.clearAnimation();
     }
 
+    /**
+     * Called When the Robot is Disconnected, and Decides What Screen Animation to Show
+     * @see RobotConnectionStateListener
+     */
     @Override
     public void robotDisconnected()
     {
@@ -564,6 +697,10 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
+    /**
+     * Responsible for the Screen Setup When the 'Lock' is On
+     * Sets sLocked true
+     */
     public void setLockOn()
     {
         sLocked = true;
@@ -576,6 +713,10 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         startLockTask();
     }
 
+    /**
+     * Responsible for the Screen Setup When the 'Lock' is Off
+     * Sets sLocked false
+     */
     public void setLockOff()
     {
         sLocked = false;
@@ -594,6 +735,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         stopBadConnectionAnimation();
     }
 
+    /**
+     * Allows the Locking Tasks to Run (If Able to do With a 'Device Manager'
+     */
     private void whitelistLockTasks()
     {
         DevicePolicyManager manager =
@@ -606,10 +750,13 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
+    /**
+     * Makes the Application Able to Use Device Administrator Abilities if Enabled
+     * TODO: Currently Not In Use, Make Subject to Code Cleanups?
+     */
     private void enableDeviceAdmin()
     {
-        DevicePolicyManager manager =
-                (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        DevicePolicyManager manager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
 
         if(!manager.isAdminActive(componentName))
@@ -621,17 +768,27 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         }
     }
 
+    /**
+     * Closes All of the Dialog Windows Whenever the Window 'Focus' Changes (Not Camera Focus)
+     * @param hasFocus - Whether this comes as an increase in focus or not
+     * @see "https://stackoverflow.com/questions/7924296/how-to-use-onwindowfocuschanged-method"
+     */
     @Override
     public void onWindowFocusChanged(boolean hasFocus)
     {
         super.onWindowFocusChanged(hasFocus);
-        if(!hasFocus && sLocked) {
+        if(!hasFocus && sLocked)
+        {
             // Close every kind of system dialog
             Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             sendBroadcast(closeDialog);
         }
     }
 
+    /**
+     * Updates the Overlay Battery Text
+     * TODO: Review Android Text Warning Solutions
+     */
     private void updateBatteryText()
     {
         Intent batteryStatus =
@@ -646,12 +803,18 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mChargingIcon.setVisibility(isCharging ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * Sets the Text For the Overlay Telling Which Mode the Camera is In, Whenever the Mode Changes
+     */
     private void updateProcModeText()
     {
         mProcMode.setText("Proc Mode: "
                 + VisionTrackerGLSurfaceView.PROC_MODE_NAMES[mView.getProcessingMode()]);
     }
 
+    /**
+     * Plays an Airhorn Sound (duh)
+     */
     public void playAirhorn()
     {
         MediaPlayer mp = MediaPlayer.create(this, R.raw.airhorn);
