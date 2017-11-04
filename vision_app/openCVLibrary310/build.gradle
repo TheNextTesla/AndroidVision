@@ -5,13 +5,13 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'  //last version jan 2016
+        classpath 'com.android.tools.build:gradle:3.0.0'  //last version jan 2016
     }
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '25.0.3'
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         minSdkVersion 21
