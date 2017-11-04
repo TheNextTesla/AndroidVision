@@ -269,7 +269,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
             /**
              * "Convert to a homogeneous 3d vector with x = 1
              * This is a seemingly strange operation, but it actually allows for some pretty neat vision operations
-             * Basically, it is treated like a vector so (only y and z, since x is distance (scale) in their model)
+             * Basically, it is treated like a vector (only y and z, since x is distance (scale) in their model)
+             * So, distance can be calculated easily taking into account Robot Pitch and YAw
              * @see "https://stackoverflow.com/questions/29199480/what-is-the-use-of-homogeneous-vectors-in-computer-vision"
              * @see "https://prateekvjoshi.com/2014/06/13/the-concept-of-homogeneous-coordinates/"
              *
