@@ -400,7 +400,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mView.setPreferences(m_prefs);
         TextView tv = (TextView) findViewById(R.id.fps_text_view);
         mProcMode = (TextView) findViewById(R.id.proc_mode_text_view);
-        mView.setProcessingMode(NativePart.DISP_MODE_TARGETS_PLUS);
+        mView.setProcessingMode(NativePart.DISP_MODE.TARGETS_PLUS);
         //TODO: MjpegServer Pause?
         MjpgServer.getInstance().pause();
         runOnUiThread(new Runnable()
@@ -496,16 +496,16 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         switch (item.getItemId())
         {
             case R.id.raw:
-                mView.setProcessingMode(NativePart.DISP_MODE_RAW);
+                mView.setProcessingMode(NativePart.DISP_MODE.RAW);
                 break;
             case R.id.thresh:
-                mView.setProcessingMode(NativePart.DISP_MODE_THRESH);
+                mView.setProcessingMode(NativePart.DISP_MODE.THRESH);
                 break;
             case R.id.targets:
-                mView.setProcessingMode(NativePart.DISP_MODE_TARGETS);
+                mView.setProcessingMode(NativePart.DISP_MODE.TARGETS);
                 break;
             case R.id.targets_plus:
-                mView.setProcessingMode(NativePart.DISP_MODE_TARGETS_PLUS);
+                mView.setProcessingMode(NativePart.DISP_MODE.TARGETS_PLUS);
                 break;
             default:
                 return false;
@@ -809,7 +809,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     private void updateProcModeText()
     {
         mProcMode.setText("Proc Mode: "
-                + VisionTrackerGLSurfaceView.PROC_MODE_NAMES[mView.getProcessingMode()]);
+                + VisionTrackerGLSurfaceView.PROC_MODE_NAMES[mView.getProcessingMode().getNumber()]);
     }
 
     /**

@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- *
+ * The Surface that Shows the Camera Output (Through Computer Vision)
  */
 public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener
 {
@@ -39,17 +39,17 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     protected int frameCounter;
     protected long lastNanoTime;
 
-    //TODO: Make procMode into an enum
-    protected int procMode = NativePart.DISP_MODE_TARGETS_PLUS;
+    //Assorted State Variables
+    protected NativePart.DISP_MODE procMode = NativePart.DISP_MODE.TARGETS_PLUS;
     TextView mFpsText = null;
     private RobotConnection mRobotConnection;
     private Preferences m_prefs;
 
     //Height and Width of Image Process, and Related Variable
-    static final int kHeight = 480;
-    static final int kWidth = 640;
+    static final int kHeight = Configuration.VIDEO_HEIGHT;
+    static final int kWidth = Configuration.VIDEO_WIDTH;
 
-    //These Variables are Related the the 'Homogeneous Vectors the CheezyPoofs Use' - See Below
+    //These Variables are Related the the 'Homogeneous Vectors' the CheezyPoofs Use - See Below
     static final double kCenterCol = ((double) kWidth) / 2.0 - .5;
     static final double kCenterRow = ((double) kHeight) / 2.0 - .5;
 
@@ -133,11 +133,9 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * TODO: Change to Enum For Easier Use (WHY IN THE WORLD IS IT AN IT)
      * @param newMode - New Processing Mode Integer
      */
-    public void setProcessingMode(int newMode) {
-        if (newMode >= 0 && newMode < PROC_MODE_NAMES.length)
-            procMode = newMode;
-        else
-            Log.e(LOGTAG, "Ignoring invalid processing mode: " + newMode);
+    public void setProcessingMode(NativePart.DISP_MODE newMode)
+    {
+        procMode = newMode;
     }
 
     /**
@@ -162,7 +160,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Returns the Local Vision Processing Mode (Kind of View)
      * @return procMode - The Current Processing Mode
      */
-    public int getProcessingMode()
+    public NativePart.DISP_MODE getProcessingMode()
     {
         return procMode;
     }
@@ -182,7 +180,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
                 Toast.makeText(getContext(), "onCameraViewStarted", Toast.LENGTH_SHORT).show();
             }
         });
-        // NativePart.initCL();
+
         frameCounter = 0;
         lastNanoTime = System.nanoTime();
     }
@@ -248,7 +246,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         //Runs the Native C++ Code (See jni.c -> image_processor.cpp)
         //Switches Between Two Arrays to Be Filled by the Process Frame and Set Image C++ Method
         //TODO: Add Option to Not Send Image
-        NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
+        NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode.getNumber(), hRange.first, hRange.second,
                 sRange.first, sRange.second, vRange.first, vRange.second, byteArraySwitch ? bufferA.array() : bufferB.array(), targetsInfo);
         byteArraySwitch = !byteArraySwitch;
 
@@ -270,7 +268,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
              * "Convert to a homogeneous 3d vector with x = 1
              * This is a seemingly strange operation, but it actually allows for some pretty neat vision operations
              * Basically, it is treated like a vector (only y and z, since x is distance (scale) in their model)
-             * So, distance can be calculated easily taking into account Robot Pitch and YAw
+             * So, distance can be calculated easily taking into account Robot Pitch and Yaw
              * @see "https://stackoverflow.com/questions/29199480/what-is-the-use-of-homogeneous-vectors-in-computer-vision"
              * @see "https://prateekvjoshi.com/2014/06/13/the-concept-of-homogeneous-coordinates/"
              *

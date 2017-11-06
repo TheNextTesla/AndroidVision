@@ -14,10 +14,17 @@ public class NativePart
 
     //Sets Up the Values for the C++ Side Enums
     //TODO: Is this really the best way to go about this?
-    public static final int DISP_MODE_RAW = 0;
-    public static final int DISP_MODE_THRESH = 1;
-    public static final int DISP_MODE_TARGETS = 2;
-    public static final int DISP_MODE_TARGETS_PLUS = 3;
+    public enum DISP_MODE
+    {
+        RAW(0),
+        THRESH(1),
+        TARGETS(2),
+        TARGETS_PLUS(3);
+
+        private final int number;
+        DISP_MODE(int number) {this.number = number;}
+        public int getNumber() {return number;}
+    }
 
     //Calls Native Code for Processing Frame
     public static native void processFrame(
