@@ -1,5 +1,9 @@
 package com.team254.cheezdroid;
 
+/**
+ * Final Class that Handles Java Code Permanent Settings
+ * Other Application Settings Can Be Found in XML, i.e. menu.xml, strings.xml, etc...
+ */
 public final class Configuration
 {
     //Specifications for the Video Stream Quality
