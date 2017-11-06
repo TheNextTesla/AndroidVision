@@ -31,7 +31,6 @@ import java.util.HashMap;
 public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener
 {
     //String Variables
-    //TODO: Reorganize into a Configuration File
     static final String LOGTAG = "VTGLSurfaceView";
     public static final String[] PROC_MODE_NAMES = new String[]{"Raw image", "Threshholded image", "Targets", "Targets plus"};
 
@@ -59,27 +58,6 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     private final ByteBuffer bufferB = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
 
     /**
-     * Instantiates a List of Camera Settings and Fills it into a 'BetterCamera2Renderer.Settings'
-     * @return settings - A List of Camera Settings
-     */
-    static BetterCamera2Renderer.Settings getCameraSettings()
-    {
-        BetterCamera2Renderer.Settings settings = new BetterCamera2Renderer.Settings();
-        settings.height = kHeight;
-        settings.width = kWidth;
-        settings.camera_settings = new HashMap<>();
-        settings.camera_settings.put(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF);
-        settings.camera_settings.put(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF);
-        settings.camera_settings.put(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
-        settings.camera_settings.put(CaptureRequest.LENS_FOCUS_DISTANCE, .2f);
-        settings.camera_settings.put(CaptureRequest.SENSOR_EXPOSURE_TIME, 10000000L);
-        //If Camera is too bright or dark, adjust the Exposure Time Above
-        //@see "https://stackoverflow.com/questions/28429071/camera-preview-is-too-dark-in-low-light-android"
-        //@see "https://developer.android.com/reference/android/hardware/camera2/CaptureRequest.html#SENSOR_EXPOSURE_TIME"
-        return settings;
-    }
-
-    /**
      * Static Creates a New Pair
      * @return A New Pair of Two Integers (0, 255)
      */
@@ -96,7 +74,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      */
     public VisionTrackerGLSurfaceView(Context context, AttributeSet attrs)
     {
-        super(context, attrs, getCameraSettings());
+        super(context, attrs, Configuration.getCameraSettings());
         byteArraySwitch = true;
     }
 
@@ -130,7 +108,6 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
 
     /**
      * Changes the 'Processing Mode' Integer
-     * TODO: Change to Enum For Easier Use (WHY IN THE WORLD IS IT AN IT)
      * @param newMode - New Processing Mode Integer
      */
     public void setProcessingMode(NativePart.DISP_MODE newMode)
@@ -256,7 +233,10 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         long timeCheck = System.currentTimeMillis();
         byte[] byteArray = byteArraySwitch ? bufferA.array() : bufferB.array();
         //https://stackoverflow.com/questions/2383265/convert-4-bytes-to-int
-        int lengthOfByteArray = ((0x000000ff & byteArray[width * height * 4]) << 24) | ((0x000000ff & byteArray[width * height * 4 + 1]) << 16) | ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) | ((0x000000ff & byteArray[width * height * 4 + 3]));
+        int lengthOfByteArray = ((0x000000ff & byteArray[width * height * 4]) << 24) |
+                ((0x000000ff & byteArray[width * height * 4 + 1]) << 16) |
+                ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) |
+                ((0x000000ff & byteArray[width * height * 4 + 3]));
         MjpgServer.getInstance().update(Arrays.copyOfRange(byteArray, 0, lengthOfByteArray));
         Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
 

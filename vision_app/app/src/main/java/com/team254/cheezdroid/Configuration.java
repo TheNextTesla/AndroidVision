@@ -1,5 +1,11 @@
 package com.team254.cheezdroid;
 
+import android.hardware.camera2.CaptureRequest;
+
+import org.opencv.android.BetterCamera2Renderer;
+
+import java.util.HashMap;
+
 /**
  * Final Class that Handles Java Code Permanent Settings
  * Other Application Settings Can Be Found in XML, i.e. menu.xml, strings.xml, etc...
@@ -19,6 +25,27 @@ public final class Configuration
 
     //Constant for the Video Connection Information
     public static final int VIDEO_PORT = 8200;
+
+    /**
+     * Instantiates a List of Camera Settings and Fills it into a 'BetterCamera2Renderer.Settings'
+     * If Camera is too bright or dark, adjust the Exposure Time Below
+     * @see "https://stackoverflow.com/questions/28429071/camera-preview-is-too-dark-in-low-light-android"
+     * @see "https://developer.android.com/reference/android/hardware/camera2/CaptureRequest.html#SENSOR_EXPOSURE_TIME"
+     * @return settings - A List of Camera Settings
+     */
+    static BetterCamera2Renderer.Settings getCameraSettings()
+    {
+        BetterCamera2Renderer.Settings settings = new BetterCamera2Renderer.Settings();
+        settings.height = VIDEO_HEIGHT;
+        settings.width = VIDEO_WIDTH;
+        settings.camera_settings = new HashMap<>();
+        settings.camera_settings.put(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF);
+        settings.camera_settings.put(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF);
+        settings.camera_settings.put(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
+        settings.camera_settings.put(CaptureRequest.LENS_FOCUS_DISTANCE, .2f);
+        settings.camera_settings.put(CaptureRequest.SENSOR_EXPOSURE_TIME, 10000000L);
+        return settings;
+    }
 
     private Configuration() {}
 }
