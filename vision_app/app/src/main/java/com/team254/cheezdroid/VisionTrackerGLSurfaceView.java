@@ -225,7 +225,6 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         //TODO: Add Option to Not Send Image
         NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode.getNumber(), hRange.first, hRange.second,
                 sRange.first, sRange.second, vRange.first, vRange.second, byteArraySwitch ? bufferA.array() : bufferB.array(), targetsInfo);
-        byteArraySwitch = !byteArraySwitch;
 
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
@@ -238,6 +237,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
                 ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) |
                 ((0x000000ff & byteArray[width * height * 4 + 3]));
         MjpgServer.getInstance().update(Arrays.copyOfRange(byteArray, 0, lengthOfByteArray));
+        byteArraySwitch = !byteArraySwitch;
         Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
 
         for (int i = 0; i < targetsInfo.numTargets; ++i)
