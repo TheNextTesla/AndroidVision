@@ -24,7 +24,7 @@ public final class Configuration
     public static final int SEND_HEARTBEAT_PERIOD = 100;
 
     //Constant for the Video Connection Information
-    public static final int VIDEO_PORT = 8200;
+    public static final int VIDEO_PORT = 5800;
 
     /**
      * Instantiates a List of Camera Settings and Fills it into a 'BetterCamera2Renderer.Settings'
