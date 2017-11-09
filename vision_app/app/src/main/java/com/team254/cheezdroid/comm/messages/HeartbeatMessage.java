@@ -5,7 +5,7 @@ package com.team254.cheezdroid.comm.messages;
  */
 public class HeartbeatMessage extends VisionMessage
 {
-    static HeartbeatMessage sInst = null;
+    private static HeartbeatMessage sInst = null;
 
     /**
      * Singleton Instance Method

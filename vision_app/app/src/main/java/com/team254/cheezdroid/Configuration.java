@@ -26,6 +26,9 @@ public final class Configuration
     //Constant for the Video Connection Information
     public static final int VIDEO_PORT = 5800;
 
+    //WakeLock Acquiring Timeout Constant (if 0, it will Assume No Timeout [1Sec * 1000ms/sec])
+    public static final int WAKE_LOCK_ACQUIRE_TIMEOUT =  1000;
+
     /**
      * Instantiates a List of Camera Settings and Fills it into a 'BetterCamera2Renderer.Settings'
      * If Camera is too bright or dark, adjust the Exposure Time Below

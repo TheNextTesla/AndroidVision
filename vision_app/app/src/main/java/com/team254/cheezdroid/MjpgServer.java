@@ -91,13 +91,13 @@ public class MjpgServer
          */
         public void writeImageUpdate(byte[] buffer)
         {
-            if (!isAlive())
+            if (!isAlive() || buffer == null)
             {
                 return;
             }
             Log.d(TAG, "Uploading " + buffer.length + " bytes");
 
-            OutputStream stream = null;
+            OutputStream stream;
             try
             {
                 stream = mSocket.getOutputStream();
@@ -234,7 +234,7 @@ public class MjpgServer
     }
 
     //Runnable that Manages Connections
-    Runnable runner = new Runnable()
+    private Runnable runner = new Runnable()
     {
         @Override
         public void run()

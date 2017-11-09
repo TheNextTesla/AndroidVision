@@ -4,14 +4,11 @@ import com.team254.cheezdroid.comm.CameraTargetInfo;
 import com.team254.cheezdroid.comm.RobotConnection;
 import com.team254.cheezdroid.comm.VisionUpdate;
 import com.team254.cheezdroid.comm.messages.TargetUpdateMessage;
-import com.team254.cheezdroid.comm.messages.VisionMessage;
 
-import org.opencv.android.BetterCamera2Renderer;
 import org.opencv.android.BetterCameraGLSurfaceView;
 
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
@@ -23,7 +20,6 @@ import android.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.HashMap;
 
 /**
  * The Surface that Shows the Camera Output (Through Computer Vision)
@@ -253,11 +249,11 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
              * @see "https://prateekvjoshi.com/2014/06/13/the-concept-of-homogeneous-coordinates/"
              *
              * Uncomment the two lnes after y and z if youu want to deal with pixels, not vectors
+             * double y = target.centroidX;
+             * double z = target.centroidY;
              */
             double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
             double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
-            //double y = target.centroidX;
-            //double z = target.centroidY;
 
             Log.i(LOGTAG, "Target at: " + y + ", " + z);
             visionUpdate.addCameraTargetInfo(new CameraTargetInfo(y, z));

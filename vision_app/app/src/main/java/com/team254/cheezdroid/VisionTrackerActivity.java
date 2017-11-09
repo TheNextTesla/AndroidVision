@@ -111,12 +111,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     @Override
     public void wantsIntakeMode()
     {
-//        if (mIsRunning && (System.currentTimeMillis() - mLastSelfieLaunch > 1000)) {
-//            Intent i = new Intent();
-//            i.setClass(VisionTrackerActivity.this, SelfieActivity.class);
-//            mLastSelfieLaunch = System.currentTimeMillis();
-//            startActivity(i);
-//        }
+
     }
 
     /**
@@ -744,9 +739,16 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
                 (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
 
-        if (manager.isDeviceOwnerApp(getPackageName()))
+        try
         {
-            manager.setLockTaskPackages(componentName, new String[]{getPackageName()});
+            if (manager.isDeviceOwnerApp(getPackageName()))
+            {
+                manager.setLockTaskPackages(componentName, new String[]{getPackageName()});
+            }
+        }
+        catch (NullPointerException npe)
+        {
+            npe.printStackTrace();
         }
     }
 
@@ -759,12 +761,19 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         DevicePolicyManager manager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
 
-        if(!manager.isAdminActive(componentName))
+        try
         {
-            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-            startActivityForResult(intent, 0);
-            return;
+            if(!manager.isAdminActive(componentName))
+            {
+                Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
+                startActivityForResult(intent, 0);
+                return;
+            }
+        }
+        catch (NullPointerException npe)
+        {
+            npe.printStackTrace();
         }
     }
 

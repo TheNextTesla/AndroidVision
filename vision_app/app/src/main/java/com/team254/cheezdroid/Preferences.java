@@ -17,7 +17,7 @@ public class Preferences
      * SharedPreferences, the Android Class That Allows for Managing Persistent Application Settings
      */
     private Context m_context;
-    SharedPreferences m_prefs;
+    private SharedPreferences m_prefs;
 
     /**
      * The Different Vision Processor Color Range Values
@@ -29,7 +29,7 @@ public class Preferences
 
     /**
      * Constructor for Preferences - Instantiates Preferences
-     * @param context
+     * @param context - Android Context
      */
     public Preferences(Context context)
     {
@@ -46,7 +46,8 @@ public class Preferences
     {
         SharedPreferences.Editor editor = m_prefs.edit();
         editor.putInt(key, value);
-        editor.commit();
+        //TODO: Double Check .apply vs (editor.commit())
+        editor.apply();
     }
 
     /**

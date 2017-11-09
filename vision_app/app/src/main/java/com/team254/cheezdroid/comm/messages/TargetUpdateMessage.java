@@ -7,8 +7,8 @@ import com.team254.cheezdroid.comm.VisionUpdate;
  */
 public class TargetUpdateMessage extends VisionMessage
 {
-    VisionUpdate mUpdate;
-    long mTimestamp;
+    private VisionUpdate mUpdate;
+    private long mTimestamp;
 
     /**
      * Creates the Target Update Message, Which Is Used to Pass Along a VisionUpdate

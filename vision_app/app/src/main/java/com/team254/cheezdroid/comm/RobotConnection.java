@@ -34,6 +34,7 @@ public class RobotConnection
     private long m_last_heartbeat_sent_at = System.currentTimeMillis();
     private long m_last_heartbeat_rcvd_at = 0;
 
+    //'Queue' of the VisionMessages to be Sent Out
     private ArrayBlockingQueue<VisionMessage> mToSend = new ArrayBlockingQueue<>(30);
 
     /**
@@ -332,7 +333,7 @@ public class RobotConnection
      * Is the RobotConnection Properly Communicating
      * @return If the RobotConnection Properly Communicating
      */
-    synchronized public boolean isConnected()
+    public synchronized boolean isConnected()
     {
         return m_socket != null && m_socket.isConnected() && m_connected;
     }
@@ -375,7 +376,7 @@ public class RobotConnection
     /**
      * Sends Out A 'Broadcast' to All Other Classes 'Listening' that the Robot is Connected
      */
-    public void broadcastRobotConnected()
+    private void broadcastRobotConnected()
     {
         Intent i = new Intent(RobotConnectionStatusBroadcastReceiver.ACTION_ROBOT_CONNECTED);
         m_context.sendBroadcast(i);
@@ -384,7 +385,7 @@ public class RobotConnection
     /**
      * Sends Out A 'Broadcast' to All Other Classes 'Listening' that the a Shot Was Taken
      */
-    public void broadcastShotTaken()
+    private void broadcastShotTaken()
     {
         Intent i = new Intent(RobotEventBroadcastReceiver.ACTION_SHOT_TAKEN);
         m_context.sendBroadcast(i);
@@ -402,7 +403,7 @@ public class RobotConnection
     /**
      * Sends Out A 'Broadcast' to All Other Classes 'Listening' that the 'IntakeMode' has Been Requested
      */
-    public void broadcastWantIntakeMode()
+    private void broadcastWantIntakeMode()
     {
         Intent i = new Intent(RobotEventBroadcastReceiver.ACTION_WANT_INTAKE);
         m_context.sendBroadcast(i);
@@ -411,7 +412,7 @@ public class RobotConnection
     /**
      * Sends Out A 'Broadcast' to All Other Classes 'Listening' that the Robot Has Been Disconnected
      */
-    public void broadcastRobotDisconnected()
+    private void broadcastRobotDisconnected()
     {
         Intent i = new Intent(RobotConnectionStatusBroadcastReceiver.ACTION_ROBOT_DISCONNECTED);
         m_context.sendBroadcast(i);
