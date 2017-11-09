@@ -14,12 +14,12 @@ import java.util.ArrayList;
  */
 public class MjpgServer
 {
-    public static final String K_BOUNDARY = "boundary";
+    private static final String K_BOUNDARY = "boundary";
     private static MjpgServer sInst = null;
     //TODO: Find Better Default Image Byte Array
     private static byte[] mDefault;
 
-    public static final String TAG = "MJPG";
+    private static final String TAG = "MJPG";
 
     /**
      * Singleton getInstance of the Class
@@ -91,13 +91,13 @@ public class MjpgServer
          */
         public void writeImageUpdate(byte[] buffer)
         {
-            if (!isAlive())
+            if (!isAlive() || buffer == null)
             {
                 return;
             }
             Log.d(TAG, "Uploading " + buffer.length + " bytes");
 
-            OutputStream stream = null;
+            OutputStream stream;
             try
             {
                 stream = mSocket.getOutputStream();
@@ -131,7 +131,7 @@ public class MjpgServer
     {
         try
         {
-            mServerSocket = new ServerSocket(5800);
+            mServerSocket = new ServerSocket(Configuration.VIDEO_PORT);
             mRunning = true;
             mRunThread = new Thread(runner);
             mRunThread.start();
@@ -234,7 +234,7 @@ public class MjpgServer
     }
 
     //Runnable that Manages Connections
-    Runnable runner = new Runnable()
+    private Runnable runner = new Runnable()
     {
         @Override
         public void run()

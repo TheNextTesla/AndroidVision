@@ -4,14 +4,11 @@ import com.team254.cheezdroid.comm.CameraTargetInfo;
 import com.team254.cheezdroid.comm.RobotConnection;
 import com.team254.cheezdroid.comm.VisionUpdate;
 import com.team254.cheezdroid.comm.messages.TargetUpdateMessage;
-import com.team254.cheezdroid.comm.messages.VisionMessage;
 
-import org.opencv.android.BetterCamera2Renderer;
 import org.opencv.android.BetterCameraGLSurfaceView;
 
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
@@ -23,15 +20,13 @@ import android.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.HashMap;
 
 /**
- *
+ * The Surface that Shows the Camera Output (Through Computer Vision)
  */
 public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implements BetterCameraGLSurfaceView.CameraTextureListener
 {
     //String Variables
-    //TODO: Reorganize into a Configuration File
     static final String LOGTAG = "VTGLSurfaceView";
     public static final String[] PROC_MODE_NAMES = new String[]{"Raw image", "Threshholded image", "Targets", "Targets plus"};
 
@@ -39,17 +34,17 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     protected int frameCounter;
     protected long lastNanoTime;
 
-    //TODO: Make procMode into an enum
-    protected int procMode = NativePart.DISP_MODE_TARGETS_PLUS;
+    //Assorted State Variables
+    protected NativePart.DISP_MODE procMode = NativePart.DISP_MODE.TARGETS_PLUS;
     TextView mFpsText = null;
     private RobotConnection mRobotConnection;
     private Preferences m_prefs;
 
     //Height and Width of Image Process, and Related Variable
-    static final int kHeight = 480;
-    static final int kWidth = 640;
+    static final int kHeight = Configuration.VIDEO_HEIGHT;
+    static final int kWidth = Configuration.VIDEO_WIDTH;
 
-    //These Variables are Related the the 'Homogeneous Vectors the CheezyPoofs Use' - See Below
+    //These Variables are Related the the 'Homogeneous Vectors' the CheezyPoofs Use - See Below
     static final double kCenterCol = ((double) kWidth) / 2.0 - .5;
     static final double kCenterRow = ((double) kHeight) / 2.0 - .5;
 
@@ -57,27 +52,6 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     private boolean byteArraySwitch;
     private final ByteBuffer bufferA = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
     private final ByteBuffer bufferB = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
-
-    /**
-     * Instantiates a List of Camera Settings and Fills it into a 'BetterCamera2Renderer.Settings'
-     * @return settings - A List of Camera Settings
-     */
-    static BetterCamera2Renderer.Settings getCameraSettings()
-    {
-        BetterCamera2Renderer.Settings settings = new BetterCamera2Renderer.Settings();
-        settings.height = kHeight;
-        settings.width = kWidth;
-        settings.camera_settings = new HashMap<>();
-        settings.camera_settings.put(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF);
-        settings.camera_settings.put(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF);
-        settings.camera_settings.put(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
-        settings.camera_settings.put(CaptureRequest.LENS_FOCUS_DISTANCE, .2f);
-        settings.camera_settings.put(CaptureRequest.SENSOR_EXPOSURE_TIME, 10000000L);
-        //If Camera is too bright or dark, adjust the Exposure Time Above
-        //@see "https://stackoverflow.com/questions/28429071/camera-preview-is-too-dark-in-low-light-android"
-        //@see "https://developer.android.com/reference/android/hardware/camera2/CaptureRequest.html#SENSOR_EXPOSURE_TIME"
-        return settings;
-    }
 
     /**
      * Static Creates a New Pair
@@ -96,7 +70,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      */
     public VisionTrackerGLSurfaceView(Context context, AttributeSet attrs)
     {
-        super(context, attrs, getCameraSettings());
+        super(context, attrs, Configuration.getCameraSettings());
         byteArraySwitch = true;
     }
 
@@ -130,14 +104,11 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
 
     /**
      * Changes the 'Processing Mode' Integer
-     * TODO: Change to Enum For Easier Use (WHY IN THE WORLD IS IT AN IT)
      * @param newMode - New Processing Mode Integer
      */
-    public void setProcessingMode(int newMode) {
-        if (newMode >= 0 && newMode < PROC_MODE_NAMES.length)
-            procMode = newMode;
-        else
-            Log.e(LOGTAG, "Ignoring invalid processing mode: " + newMode);
+    public void setProcessingMode(NativePart.DISP_MODE newMode)
+    {
+        procMode = newMode;
     }
 
     /**
@@ -162,7 +133,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
      * Returns the Local Vision Processing Mode (Kind of View)
      * @return procMode - The Current Processing Mode
      */
-    public int getProcessingMode()
+    public NativePart.DISP_MODE getProcessingMode()
     {
         return procMode;
     }
@@ -182,7 +153,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
                 Toast.makeText(getContext(), "onCameraViewStarted", Toast.LENGTH_SHORT).show();
             }
         });
-        // NativePart.initCL();
+
         frameCounter = 0;
         lastNanoTime = System.nanoTime();
     }
@@ -248,9 +219,8 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         //Runs the Native C++ Code (See jni.c -> image_processor.cpp)
         //Switches Between Two Arrays to Be Filled by the Process Frame and Set Image C++ Method
         //TODO: Add Option to Not Send Image
-        NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode, hRange.first, hRange.second,
+        NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode.getNumber(), hRange.first, hRange.second,
                 sRange.first, sRange.second, vRange.first, vRange.second, byteArraySwitch ? bufferA.array() : bufferB.array(), targetsInfo);
-        byteArraySwitch = !byteArraySwitch;
 
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
@@ -258,8 +228,12 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         long timeCheck = System.currentTimeMillis();
         byte[] byteArray = byteArraySwitch ? bufferA.array() : bufferB.array();
         //https://stackoverflow.com/questions/2383265/convert-4-bytes-to-int
-        int lengthOfByteArray = ((0x000000ff & byteArray[width * height * 4]) << 24) | ((0x000000ff & byteArray[width * height * 4 + 1]) << 16) | ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) | ((0x000000ff & byteArray[width * height * 4 + 3]));
+        int lengthOfByteArray = ((0x000000ff & byteArray[width * height * 4]) << 24) |
+                ((0x000000ff & byteArray[width * height * 4 + 1]) << 16) |
+                ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) |
+                ((0x000000ff & byteArray[width * height * 4 + 3]));
         MjpgServer.getInstance().update(Arrays.copyOfRange(byteArray, 0, lengthOfByteArray));
+        byteArraySwitch = !byteArraySwitch;
         Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
 
         for (int i = 0; i < targetsInfo.numTargets; ++i)
@@ -270,16 +244,16 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
              * "Convert to a homogeneous 3d vector with x = 1
              * This is a seemingly strange operation, but it actually allows for some pretty neat vision operations
              * Basically, it is treated like a vector (only y and z, since x is distance (scale) in their model)
-             * So, distance can be calculated easily taking into account Robot Pitch and YAw
+             * So, distance can be calculated easily taking into account Robot Pitch and Yaw
              * @see "https://stackoverflow.com/questions/29199480/what-is-the-use-of-homogeneous-vectors-in-computer-vision"
              * @see "https://prateekvjoshi.com/2014/06/13/the-concept-of-homogeneous-coordinates/"
              *
              * Uncomment the two lnes after y and z if youu want to deal with pixels, not vectors
+             * double y = target.centroidX;
+             * double z = target.centroidY;
              */
             double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
             double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
-            //double y = target.centroidX;
-            //double z = target.centroidY;
 
             Log.i(LOGTAG, "Target at: " + y + ", " + z);
             visionUpdate.addCameraTargetInfo(new CameraTargetInfo(y, z));

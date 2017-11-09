@@ -8,8 +8,6 @@ import android.os.PowerManager;
 
 import com.team254.cheezdroid.comm.RobotConnection;
 
-import java.util.Arrays;
-
 /**
  * Manages the Fundamental Application Operation
  */
@@ -85,10 +83,16 @@ public class AppContext extends Application
     {
         if(wakeLock == null)
         {
-            //TODO: Handle WakeLock Failure Outcome
-            //lazy loading: first call, create wakeLock via PowerManager.
+            //Lazy loading: first call, create wakeLock via PowerManager.
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "wakeup");
+            try
+            {
+                wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "wakeup");
+            }
+            catch (NullPointerException npe)
+            {
+                npe.printStackTrace();
+            }
         }
         return wakeLock;
     }

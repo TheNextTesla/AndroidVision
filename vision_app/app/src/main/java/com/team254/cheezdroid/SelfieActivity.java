@@ -36,7 +36,7 @@ public class SelfieActivity extends Activity implements RobotEventListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         rebr = new RobotEventBroadcastReceiver(this, this);
-        if (null == savedInstanceState)
+        if (savedInstanceState == null)
         {
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, SelfieModeFragment.newInstance())

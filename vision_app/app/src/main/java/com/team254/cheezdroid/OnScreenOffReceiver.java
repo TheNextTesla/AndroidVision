@@ -44,8 +44,14 @@ public class OnScreenOffReceiver extends BroadcastReceiver
         }
 
         //Create a new wake lock...
-        //TODO: Should Give Max Time For WakeLock
-        wakeLock.acquire();
+        if(Configuration.WAKE_LOCK_ACQUIRE_TIMEOUT <= 0)
+        {
+            wakeLock.acquire();
+        }
+        else
+        {
+            wakeLock.acquire(Configuration.WAKE_LOCK_ACQUIRE_TIMEOUT);
+        }
 
         //... and Release Again
         wakeLock.release();

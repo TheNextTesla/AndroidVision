@@ -683,7 +683,14 @@ public class SelfieModeFragment extends Fragment
             {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
-            manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
+            try
+            {
+                manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
+            }
+            catch (NullPointerException npe)
+            {
+                npe.printStackTrace();
+            }
         }
         catch (CameraAccessException e)
         {

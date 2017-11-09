@@ -111,12 +111,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     @Override
     public void wantsIntakeMode()
     {
-//        if (mIsRunning && (System.currentTimeMillis() - mLastSelfieLaunch > 1000)) {
-//            Intent i = new Intent();
-//            i.setClass(VisionTrackerActivity.this, SelfieActivity.class);
-//            mLastSelfieLaunch = System.currentTimeMillis();
-//            startActivity(i);
-//        }
+
     }
 
     /**
@@ -400,7 +395,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mView.setPreferences(m_prefs);
         TextView tv = (TextView) findViewById(R.id.fps_text_view);
         mProcMode = (TextView) findViewById(R.id.proc_mode_text_view);
-        mView.setProcessingMode(NativePart.DISP_MODE_TARGETS_PLUS);
+        mView.setProcessingMode(NativePart.DISP_MODE.TARGETS_PLUS);
         //TODO: MjpegServer Pause?
         MjpgServer.getInstance().pause();
         runOnUiThread(new Runnable()
@@ -496,16 +491,16 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         switch (item.getItemId())
         {
             case R.id.raw:
-                mView.setProcessingMode(NativePart.DISP_MODE_RAW);
+                mView.setProcessingMode(NativePart.DISP_MODE.RAW);
                 break;
             case R.id.thresh:
-                mView.setProcessingMode(NativePart.DISP_MODE_THRESH);
+                mView.setProcessingMode(NativePart.DISP_MODE.THRESH);
                 break;
             case R.id.targets:
-                mView.setProcessingMode(NativePart.DISP_MODE_TARGETS);
+                mView.setProcessingMode(NativePart.DISP_MODE.TARGETS);
                 break;
             case R.id.targets_plus:
-                mView.setProcessingMode(NativePart.DISP_MODE_TARGETS_PLUS);
+                mView.setProcessingMode(NativePart.DISP_MODE.TARGETS_PLUS);
                 break;
             default:
                 return false;
@@ -744,9 +739,16 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
                 (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
 
-        if (manager.isDeviceOwnerApp(getPackageName()))
+        try
         {
-            manager.setLockTaskPackages(componentName, new String[]{getPackageName()});
+            if (manager.isDeviceOwnerApp(getPackageName()))
+            {
+                manager.setLockTaskPackages(componentName, new String[]{getPackageName()});
+            }
+        }
+        catch (NullPointerException npe)
+        {
+            npe.printStackTrace();
         }
     }
 
@@ -759,12 +761,19 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         DevicePolicyManager manager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
 
-        if(!manager.isAdminActive(componentName))
+        try
         {
-            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-            startActivityForResult(intent, 0);
-            return;
+            if(!manager.isAdminActive(componentName))
+            {
+                Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
+                startActivityForResult(intent, 0);
+                return;
+            }
+        }
+        catch (NullPointerException npe)
+        {
+            npe.printStackTrace();
         }
     }
 
@@ -809,7 +818,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     private void updateProcModeText()
     {
         mProcMode.setText("Proc Mode: "
-                + VisionTrackerGLSurfaceView.PROC_MODE_NAMES[mView.getProcessingMode()]);
+                + VisionTrackerGLSurfaceView.PROC_MODE_NAMES[mView.getProcessingMode().getNumber()]);
     }
 
     /**
