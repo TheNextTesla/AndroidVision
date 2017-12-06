@@ -5,7 +5,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0'  //last version jan 2016
+        classpath 'com.android.tools.build:gradle:3.0.1'  //Updated November 2017
+
     }
 }
 
