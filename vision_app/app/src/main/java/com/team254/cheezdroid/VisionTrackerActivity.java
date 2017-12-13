@@ -543,7 +543,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max)
             {
                 Log.i("H", min + " " + max);
-                m_prefs.setThresholdHRange(min, max);
+                Log.d("HValue", min + " " + max);
+                //m_prefs.setThresholdHRange(min, max);
+                m_prefs.setThresholdHRange(max, min);
             }
         });
 
@@ -556,7 +558,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max)
             {
                 Log.i("S", min + " " + max);
-                m_prefs.setThresholdSRange(min, max);
+                Log.d("SValue", min + " " + max);
+                //m_prefs.setThresholdSRange(min, max);
+                m_prefs.setThresholdSRange(max, min);
             }
         });
 
@@ -569,7 +573,9 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             public void onRangeSeekBarValuesChanged(RangeSeekBar<?> rangeSeekBar, Integer min, Integer max)
             {
                 Log.i("V", min + " " + max);
-                m_prefs.setThresholdVRange(min, max);
+                Log.d("VValue", min + " " + max);
+                //m_prefs.setThresholdVRange(min, max);
+                m_prefs.setThresholdVRange(max, min);
             }
         });
 
