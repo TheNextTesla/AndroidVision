@@ -50,6 +50,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
 
     //Two Buffers of Bytes for The C++ Image to Be Transferred Back Safely
     private boolean byteArraySwitch;
+    private boolean shouldArrayBeStreamed = Configuration.DEFAULT_SHOULD_VIDEO_STREAM;
     private final ByteBuffer bufferA = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
     private final ByteBuffer bufferB = ByteBuffer.allocate(kWidth * kHeight * 4 + 4);
 
@@ -219,22 +220,30 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         //Runs the Native C++ Code (See jni.c -> image_processor.cpp)
         //Switches Between Two Arrays to Be Filled by the Process Frame and Set Image C++ Method
         //TODO: Add Option to Not Send Image
-        NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode.getNumber(), hRange.first, hRange.second,
-                sRange.first, sRange.second, vRange.first, vRange.second, byteArraySwitch ? bufferA.array() : bufferB.array(), targetsInfo);
+        if(shouldArrayBeStreamed)
+        {
+            NativePart.processFrameAndSetImage(texIn, texOut, width, height, procMode.getNumber(), Math.min(hRange.first, hRange.second), Math.max(hRange.first, hRange.second),
+                    Math.min(sRange.first, sRange.second), Math.max(sRange.first, sRange.second), Math.min(vRange.first, vRange.second), Math.max(vRange.first, vRange.second), byteArraySwitch ? bufferA.array() : bufferB.array(), targetsInfo);
+
+            long timeCheck = System.currentTimeMillis();
+            byte[] byteArray = byteArraySwitch ? bufferA.array() : bufferB.array();
+            //https://stackoverflow.com/questions/2383265/convert-4-bytes-to-int
+            int lengthOfByteArray = ((0x000000ff & byteArray[width * height * 4]) << 24) |
+                    ((0x000000ff & byteArray[width * height * 4 + 1]) << 16) |
+                    ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) |
+                    ((0x000000ff & byteArray[width * height * 4 + 3]));
+            MjpgServer.getInstance().update(Arrays.copyOfRange(byteArray, 0, lengthOfByteArray));
+            byteArraySwitch = !byteArraySwitch;
+            Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
+        }
+        else
+        {
+            NativePart.processFrame(texIn, texOut, width, height, procMode.getNumber(), hRange.first, hRange.second,
+                    sRange.first, sRange.second, vRange.first,vRange.second, targetsInfo);
+        }
 
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
-
-        long timeCheck = System.currentTimeMillis();
-        byte[] byteArray = byteArraySwitch ? bufferA.array() : bufferB.array();
-        //https://stackoverflow.com/questions/2383265/convert-4-bytes-to-int
-        int lengthOfByteArray = ((0x000000ff & byteArray[width * height * 4]) << 24) |
-                ((0x000000ff & byteArray[width * height * 4 + 1]) << 16) |
-                ((0x000000ff & byteArray[width * height * 4 + 2]) << 8) |
-                ((0x000000ff & byteArray[width * height * 4 + 3]));
-        MjpgServer.getInstance().update(Arrays.copyOfRange(byteArray, 0, lengthOfByteArray));
-        byteArraySwitch = !byteArraySwitch;
-        Log.d(LOGTAG, "MJPG Uploading Costs " + (System.currentTimeMillis() - timeCheck) + "ms");
 
         for (int i = 0; i < targetsInfo.numTargets; ++i)
         {

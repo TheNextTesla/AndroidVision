@@ -32,10 +32,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".SelfieActivity"
-            android:screenOrientation="landscape"
-            android:configChanges="keyboardHidden|orientation" />
-
         <receiver
             android:name=".ChezyDeviceAdminReceiver"
             android:description="@string/device_admin_description"

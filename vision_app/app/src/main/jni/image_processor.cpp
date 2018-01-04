@@ -158,7 +158,7 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
 
             TargetInfo targetI = accepted_targets[i];
             TargetInfo targetJ = accepted_targets[j];
-            double offset = abs(targetI.centroid_x - targetJ.centroid_x);
+            double offset = std::abs(targetI.centroid_x - targetJ.centroid_x);
             if (offset < kMaxOffset)
             {
                 TargetInfo topTarget = targetI.centroid_y > targetJ.centroid_y ? targetI : targetJ;
