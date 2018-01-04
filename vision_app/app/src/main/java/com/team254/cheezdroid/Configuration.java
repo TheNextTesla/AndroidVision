@@ -25,6 +25,7 @@ public final class Configuration
 
     //Constant for the Video Connection Information
     public static final int VIDEO_PORT = 5800;
+    public static final boolean DEFAULT_SHOULD_VIDEO_STREAM = true;
 
     //WakeLock Acquiring Timeout Constant (if 0, it will Assume No Timeout [1Sec * 1000ms/sec])
     public static final int WAKE_LOCK_ACQUIRE_TIMEOUT =  1000;
