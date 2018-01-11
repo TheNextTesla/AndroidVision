@@ -35,7 +35,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.support.v4.app.ActivityCompat;
 
-import com.androidFRC.androidVision.comm.RobotConnection;
 import com.androidFRC.androidVision.comm.RobotConnectionStateListener;
 import com.androidFRC.androidVision.comm.RobotConnectionStatusBroadcastReceiver;
 
@@ -743,7 +742,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     {
         DevicePolicyManager manager =
                 (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
+        ComponentName componentName = AppDeviceAdminReceiver.getComponentName(this);
 
         try
         {
@@ -765,7 +764,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     private void enableDeviceAdmin()
     {
         DevicePolicyManager manager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        ComponentName componentName = ChezyDeviceAdminReceiver.getComponentName(this);
+        ComponentName componentName = AppDeviceAdminReceiver.getComponentName(this);
 
         try
         {

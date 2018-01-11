@@ -7,7 +7,7 @@ import android.content.Context;
 /**
  * Class that Manages the Application's 'Admin Receiver' Status
  */
-public class ChezyDeviceAdminReceiver extends DeviceAdminReceiver
+public class AppDeviceAdminReceiver extends DeviceAdminReceiver
 {
     /**
      * Gets the Application Component that Is Available
@@ -16,6 +16,6 @@ public class ChezyDeviceAdminReceiver extends DeviceAdminReceiver
      */
     public static ComponentName getComponentName(Context context)
     {
-        return new ComponentName(context.getApplicationContext(), ChezyDeviceAdminReceiver.class);
+        return new ComponentName(context.getApplicationContext(), AppDeviceAdminReceiver.class);
     }
 }
