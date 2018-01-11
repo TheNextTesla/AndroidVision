@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.team254.cheezdroid"
+    package="com.androidFRC.androidVision"
     android:versionCode="1"
     android:versionName="1.0" >
 
     <uses-sdk
         android:minSdkVersion="21"
-        android:targetSdkVersion="26" />
+        android:targetSdkVersion="27" />
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
     <uses-feature android:name="android.hardware.camera"/>
@@ -18,7 +18,7 @@
     <application
         android:name=".AppContext"
         android:allowBackup="true"
-        android:icon="@mipmap/icon"
+        android:icon="@mipmap/ic_launcher"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         <activity
             android:name=".VisionTrackerActivity"
@@ -33,7 +33,7 @@
         </activity>
 
         <receiver
-            android:name=".ChezyDeviceAdminReceiver"
+            android:name=".AppDeviceAdminReceiver"
             android:description="@string/device_admin_description"
             android:label="@string/device_admin_label"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
