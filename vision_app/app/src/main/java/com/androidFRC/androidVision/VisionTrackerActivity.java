@@ -1,4 +1,4 @@
-package com.team254.cheezdroid;
+package com.androidFRC.androidVision;
 
 import android.Manifest;
 import android.app.Activity;
@@ -35,9 +35,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.support.v4.app.ActivityCompat;
 
-import com.team254.cheezdroid.comm.RobotConnection;
-import com.team254.cheezdroid.comm.RobotConnectionStateListener;
-import com.team254.cheezdroid.comm.RobotConnectionStatusBroadcastReceiver;
+import com.androidFRC.androidVision.comm.RobotConnection;
+import com.androidFRC.androidVision.comm.RobotConnectionStateListener;
+import com.androidFRC.androidVision.comm.RobotConnectionStatusBroadcastReceiver;
 
 import org.florescu.android.rangeseekbar.RangeSeekBar;
 
@@ -322,11 +322,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         tryStartCamera();
 
         connectionStateView = findViewById(R.id.connectionState);
-        mLockButton = (ImageButton) findViewById(R.id.lockButton);
-        mViewTypeButton = (ImageButton) findViewById(R.id.viewSelectButton);
-        mPrefsButton = (ImageButton) findViewById(R.id.hsvEditButton);
-        mBatteryText = (TextView) findViewById(R.id.battery_text);
-        mChargingIcon = (ImageView) findViewById(R.id.chargingIcon);
+        mLockButton = findViewById(R.id.lockButton);
+        mViewTypeButton = findViewById(R.id.viewSelectButton);
+        mPrefsButton = findViewById(R.id.hsvEditButton);
+        mBatteryText = findViewById(R.id.battery_text);
+        mChargingIcon = findViewById(R.id.chargingIcon);
 
         updateBatteryText();
 
@@ -390,11 +390,11 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             requestCameraPermission();
             return;
         }
-        mView = (VisionTrackerGLSurfaceView) findViewById(R.id.my_gl_surface_view);
+        mView = findViewById(R.id.my_gl_surface_view);
         mView.setCameraTextureListener(mView);
         mView.setPreferences(m_prefs);
-        TextView tv = (TextView) findViewById(R.id.fps_text_view);
-        mProcMode = (TextView) findViewById(R.id.proc_mode_text_view);
+        TextView tv = findViewById(R.id.fps_text_view);
+        mProcMode = findViewById(R.id.proc_mode_text_view);
         mView.setProcessingMode(NativePart.DISP_MODE.TARGETS_PLUS);
         //TODO: MjpegServer Pause?
         MjpgServer.getInstance().pause();

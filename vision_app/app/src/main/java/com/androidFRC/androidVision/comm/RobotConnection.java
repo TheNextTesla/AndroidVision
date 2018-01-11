@@ -1,14 +1,14 @@
-package com.team254.cheezdroid.comm;
+package com.androidFRC.androidVision.comm;
 
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.team254.cheezdroid.Configuration;
-import com.team254.cheezdroid.RobotEventBroadcastReceiver;
-import com.team254.cheezdroid.comm.messages.HeartbeatMessage;
-import com.team254.cheezdroid.comm.messages.OffWireMessage;
-import com.team254.cheezdroid.comm.messages.VisionMessage;
+import com.androidFRC.androidVision.Configuration;
+import com.androidFRC.androidVision.RobotEventBroadcastReceiver;
+import com.androidFRC.androidVision.comm.messages.HeartbeatMessage;
+import com.androidFRC.androidVision.comm.messages.OffWireMessage;
+import com.androidFRC.androidVision.comm.messages.VisionMessage;
 
 import java.io.BufferedReader;
 import java.io.IOException;

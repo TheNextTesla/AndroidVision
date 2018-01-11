@@ -1,9 +1,9 @@
-package com.team254.cheezdroid;
+package com.androidFRC.androidVision;
 
-import com.team254.cheezdroid.comm.CameraTargetInfo;
-import com.team254.cheezdroid.comm.RobotConnection;
-import com.team254.cheezdroid.comm.VisionUpdate;
-import com.team254.cheezdroid.comm.messages.TargetUpdateMessage;
+import com.androidFRC.androidVision.comm.CameraTargetInfo;
+import com.androidFRC.androidVision.comm.RobotConnection;
+import com.androidFRC.androidVision.comm.VisionUpdate;
+import com.androidFRC.androidVision.comm.messages.TargetUpdateMessage;
 
 import org.opencv.android.BetterCameraGLSurfaceView;
 
@@ -177,7 +177,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     /**
      * On Every Image Update to the Screen, This Code Runs (Vision Ops, Screen Updates)
      * @param texIn - The OpenGL texture ID that contains frame in RGBA format
-     * @param texOut - The OpenGL texture ID that can be used to store modified frame image t display
+     * @param texOut - The OpenGL texture ID that can be used to store modified frame image to display
      * @param width - The width of the frame
      * @param height - The height of the frame
      * @param image_timestamp - The Time of the Creation of the Image

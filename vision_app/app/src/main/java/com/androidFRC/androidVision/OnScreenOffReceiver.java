@@ -1,4 +1,4 @@
-package com.team254.cheezdroid;
+package com.androidFRC.androidVision;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

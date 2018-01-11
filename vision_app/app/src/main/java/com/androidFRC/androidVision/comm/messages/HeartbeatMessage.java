@@ -1,4 +1,4 @@
-package com.team254.cheezdroid.comm.messages;
+package com.androidFRC.androidVision.comm.messages;
 
 /**
  * Empty Message Periodically Sent So Both Sides Know the State of the Connection

@@ -1,4 +1,4 @@
-package com.team254.cheezdroid.comm.messages;
+package com.androidFRC.androidVision.comm.messages;
 
 import org.json.JSONException;
 import org.json.JSONObject;

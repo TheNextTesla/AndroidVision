@@ -1,6 +1,6 @@
-package com.team254.cheezdroid.comm.messages;
+package com.androidFRC.androidVision.comm.messages;
 
-import com.team254.cheezdroid.comm.VisionUpdate;
+import com.androidFRC.androidVision.comm.VisionUpdate;
 
 /**
  * Message Packaging for Passing Along Target Information

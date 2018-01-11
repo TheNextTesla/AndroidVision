@@ -1,4 +1,4 @@
-package com.team254.cheezdroid;
+package com.androidFRC.androidVision;
 
 import android.app.Application;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.PowerManager;
 
-import com.team254.cheezdroid.comm.RobotConnection;
+import com.androidFRC.androidVision.comm.RobotConnection;
 
 /**
  * Manages the Fundamental Application Operation
