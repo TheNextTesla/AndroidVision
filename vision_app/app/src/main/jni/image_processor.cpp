@@ -97,6 +97,7 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
 
             //Filter based on size
             //Keep in mind width/height are in imager terms...
+            //TODO: Revise based on New Size
             const double kMinTargetWidth = 20;
             const double kMaxTargetWidth = 300;
             const double kMinTargetHeight = 10;

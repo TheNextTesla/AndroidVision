@@ -43,8 +43,6 @@ import org.florescu.android.rangeseekbar.RangeSeekBar;
 import java.util.Timer;
 import java.util.TimerTask;
 
-//TODO: Add Documentation and Commenting to this Class
-
 /**
  * Activity (Basically the Main Activity) that Has
  */
