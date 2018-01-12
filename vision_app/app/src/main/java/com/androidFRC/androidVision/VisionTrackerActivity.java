@@ -57,6 +57,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     private TextView mProcMode;
     private ImageButton mLockButton, mPrefsButton, mViewTypeButton;
     private TextView mBatteryText;
+    private TextView mTestInterfaceText;
     private ImageView mChargingIcon;
     private Preferences m_prefs;
 
@@ -66,6 +67,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     private Timer mUpdateViewTimer;
     private Long mLastSelfieLaunch = 0L;
 
+    private boolean mIsToggledFieldTest;
     private boolean mIsRunning;
 
     /**
@@ -323,6 +325,7 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
         mViewTypeButton = findViewById(R.id.viewSelectButton);
         mPrefsButton = findViewById(R.id.hsvEditButton);
         mBatteryText = findViewById(R.id.battery_text);
+        mTestInterfaceText = findViewById(R.id.test_text_view);
         mChargingIcon = findViewById(R.id.chargingIcon);
 
         updateBatteryText();
@@ -475,6 +478,24 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     public void showViewOptions(View v)
     {
         mView.openOptionsMenu();
+    }
+
+
+    /**
+     * Displays Calibration Data on the Field
+     * @param v - View (Ignored)
+     */
+    public void toggleFieldTest(View v)
+    {
+        if(mIsToggledFieldTest)
+        {
+            mTestInterfaceText.setText("\n\nField Calibration Data Test");
+        }
+        else
+        {
+            mTestInterfaceText.setText("");
+        }
+        mIsToggledFieldTest = !mIsToggledFieldTest;
     }
 
     /**
