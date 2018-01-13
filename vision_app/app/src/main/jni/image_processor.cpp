@@ -38,7 +38,6 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
     LOGD("H %d-%d S %d-%d V %d-%d", h_min, h_max, s_min, s_max, v_min, v_max);
     int64_t t;
 
-    //TODO: Do these arrays really need static lifecycles?
     //Creates Pixel Array (Mat): https://docs.opencv.org/3.1.0/d3/d63/classcv_1_1Mat.html
     static cv::Mat input;
     input.create(h, w, CV_8UC4);
@@ -92,16 +91,16 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
             target.centroid_x = bounding_rect.x + (bounding_rect.width / 2);
             // centroid Y is top of target because it changes shape as you move
             target.centroid_y = bounding_rect.y + bounding_rect.height;
-            target.width = bounding_rect.width;target.height = bounding_rect.height;
+            target.width = bounding_rect.width;
+            target.height = bounding_rect.height;
             target.points = convex_contour;
 
             //Filter based on size
-            //Keep in mind width/height are in imager terms...
-            //TODO: Revise based on New Size
-            const double kMinTargetWidth = 20;
+            //Keep in mind width/height are in image's terms...
+            const double kMinTargetWidth = 10;
             const double kMaxTargetWidth = 300;
             const double kMinTargetHeight = 10;
-            const double kMaxTargetHeight = 100;
+            const double kMaxTargetHeight = 300;
             if (target.width < kMinTargetWidth || target.width > kMaxTargetWidth ||
                 target.height < kMinTargetHeight || target.height > kMaxTargetHeight)
             {
@@ -112,8 +111,8 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
             }
 
             // Filter based on shape
-            const double kMaxWideness = 7.0;
-            const double kMinWideness = 1.5;
+            const double kMaxWideness = 3.0;
+            const double kMinWideness = 0.25;
             double wideness = target.width / target.height;
             if (wideness < kMinWideness || wideness > kMaxWideness)
             {
@@ -144,34 +143,30 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
 
     LOGD("Contour analysis costs %d ms", getTimeInterval(t));
 
-    //Runs Through the Targets, and Finds Their Relations To One Another
-    //Used to Find the Close Pairs of Targets
-    const double kMaxOffset = 10;
-    bool found = false;
-    for (int i = 0; !found && i < accepted_targets.size(); i++)
+    //Sorts (Insertion Sort) Array Based on Size
+    for (int i = 0; i < accepted_targets.size(); i++)
     {
-        for (int j = 0; !found && j < accepted_targets.size(); j++)
+        for (int j = accepted_targets.size() - 1; j > i; j--)
         {
-            if (i == j)
-            {
-                continue;
-            }
+            TargetInfo targetA = accepted_targets[i];
+            TargetInfo targetB = accepted_targets[j];
 
-            TargetInfo targetI = accepted_targets[i];
-            TargetInfo targetJ = accepted_targets[j];
-            double offset = std::abs(targetI.centroid_x - targetJ.centroid_x);
-            if (offset < kMaxOffset)
+            if (targetB.width * targetB.height > targetA.width * targetA.height)
             {
-                TargetInfo topTarget = targetI.centroid_y > targetJ.centroid_y ? targetI : targetJ;
-                TargetInfo bottomTarget = targetI.centroid_y < targetJ.centroid_y ? targetI : targetJ;
-                if (topTarget.height > bottomTarget.height)
-                {
-                    targets.push_back(std::move(topTarget));
-                    found = true;
-                    break;
-                }
+                std::swap(accepted_targets[i], accepted_targets[j]);
             }
         }
+    }
+
+    LOGD("Total Number of Targets: %d, accepted_targets.size()");
+
+    //Takes the top so many blocks in size
+    const int kMaxTargets = 6;
+    for (int i = 0; i < kMaxTargets && i < accepted_targets.size(); i++)
+    {
+        LOGD("True Target Identified");
+        TargetInfo target = accepted_targets[i];
+        targets.push_back(std::move(target));
     }
 
     //Write Back - 'vis' is the Image Array that Will Be Displayed
@@ -192,8 +187,6 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
         for (auto &target : targets)
         {
             cv::polylines(vis, target.points, true, cv::Scalar(0, 112, 255), 3);
-            cv::circle(vis, cv::Point(target.centroid_x, target.centroid_y), 4,
-                 cv::Scalar(255, 50, 255), 3);
         }
     }
 
