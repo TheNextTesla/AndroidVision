@@ -17,6 +17,8 @@ public final class Configuration
     public static final int VIDEO_WIDTH = 640;
 
     //Constants For The Robot Connection Information
+    //For Available Ports on FRC, See:
+    //https://wpilib.screenstepslive.com/s/fms/m/whitepaper/l/608744-fms-whitepaper
     public static final int ROBOT_PORT = 8254;
     public static final String ROBOT_PROXY_HOST = "localhost";
     public static final int CONNECTOR_SLEEP_MS = 100;
