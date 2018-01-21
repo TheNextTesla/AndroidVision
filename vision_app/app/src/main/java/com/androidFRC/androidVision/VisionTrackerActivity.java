@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Pair;
@@ -34,9 +35,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.support.v4.app.ActivityCompat;
+import android.widget.Toast;
 
 import com.androidFRC.androidVision.comm.RobotConnectionStateListener;
 import com.androidFRC.androidVision.comm.RobotConnectionStatusBroadcastReceiver;
+import com.androidFRC.androidVision.math.Rotation2d;
 
 import org.florescu.android.rangeseekbar.RangeSeekBar;
 
@@ -66,6 +69,10 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     private RobotEventBroadcastReceiver rer;
     private Timer mUpdateViewTimer;
     private Long mLastSelfieLaunch = 0L;
+
+    private Toast mCalibrationToast;
+    private Handler mCalibrationTestHandler;
+    private Runnable mCalibrationTestRunnable;
 
     private boolean mIsToggledFieldTest;
     private boolean mIsRunning;
@@ -372,6 +379,24 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
             }
         });
 
+        mCalibrationTestHandler = new Handler();
+        mCalibrationTestRunnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if(mCalibrationToast != null)
+                    mCalibrationToast.cancel();
+
+                String response = mView.simpleVisionCalc(mView.getLastTargets());
+                mCalibrationToast = Toast.makeText(getApplicationContext(), response, Toast.LENGTH_SHORT);
+                if(!response.equals(""))
+                    mCalibrationToast.show();
+
+                mCalibrationTestHandler.postDelayed(this, 1000);
+            }
+        };
+
         MjpgServer.getInstance().pause();
 
         whitelistLockTasks();
@@ -489,10 +514,12 @@ public class VisionTrackerActivity extends Activity implements RobotConnectionSt
     {
         if(mIsToggledFieldTest)
         {
-            mTestInterfaceText.setText("\n\nField Calibration Data Test");
+            mTestInterfaceText.setText("\n\n\n\nField Calibration Data Test");
+            mCalibrationTestHandler.post(mCalibrationTestRunnable);
         }
         else
         {
+            mCalibrationTestHandler.removeCallbacks(mCalibrationTestRunnable);
             mTestInterfaceText.setText("");
         }
         mIsToggledFieldTest = !mIsToggledFieldTest;

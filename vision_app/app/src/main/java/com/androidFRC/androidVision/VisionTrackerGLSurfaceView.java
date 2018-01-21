@@ -4,11 +4,18 @@ import com.androidFRC.androidVision.comm.CameraTargetInfo;
 import com.androidFRC.androidVision.comm.RobotConnection;
 import com.androidFRC.androidVision.comm.VisionUpdate;
 import com.androidFRC.androidVision.comm.messages.TargetUpdateMessage;
+import com.androidFRC.androidVision.math.Rotation2d;
 
 import org.opencv.android.BetterCameraGLSurfaceView;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventCallback;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
@@ -20,6 +27,9 @@ import android.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Locale;
+
+import static android.content.Context.SENSOR_SERVICE;
 
 /**
  * The Surface that Shows the Camera Output (Through Computer Vision)
@@ -29,6 +39,42 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     //String Variables
     static final String LOGTAG = "VTGLSurfaceView";
     public static final String[] PROC_MODE_NAMES = new String[]{"Raw image", "Threshholded image", "Targets", "Targets plus"};
+
+    //Constants for On-Field (Camera Only) Vision Math
+    private static final double kCubeCenterHeight = 6;
+    private static final double kCubeCircularRadius = 13 / 2.0;
+    private static final double kCameraDeadband = 0.001;
+    private static final double kCameraHeight = 31;
+    private static final double kHeightDifference = kCubeCenterHeight - kCameraHeight;
+
+    //Values Updated by Sensors
+    private float[] accelerometerValues;
+    private float[] magnetometerValues;
+
+    //Sensors Required for Easy On-Field Vision
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private Sensor magnetometer;
+
+    private NativePart.TargetsInfo lastTargets;
+
+    //Listener for the Changing Values
+    private SensorEventListener sensorListener = new SensorEventCallback()
+    {
+        @Override
+        public void onSensorChanged(SensorEvent sensorEvent)
+        {
+            super.onSensorChanged(sensorEvent);
+            if(sensorEvent.sensor == accelerometer)
+            {
+                accelerometerValues = sensorEvent.values;
+            }
+            else if(sensorEvent.sensor == magnetometer)
+            {
+                magnetometerValues = sensorEvent.values;
+            }
+        }
+    };
 
     //State Variables for Time Management
     protected int frameCounter;
@@ -41,6 +87,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     private Preferences m_prefs;
 
     //Height and Width of Image Process, and Related Variable
+    //TODO: Should this be the way?
     static final int kHeight = Configuration.VIDEO_HEIGHT;
     static final int kWidth = Configuration.VIDEO_WIDTH;
 
@@ -128,6 +175,15 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
     public void setPreferences(Preferences prefs)
     {
         m_prefs = prefs;
+    }
+
+    /**
+     * Returns the Last Array Of Generated Targets
+     * @return the Last Array Of Generated Targets
+     */
+    public NativePart.TargetsInfo getLastTargets()
+    {
+        return lastTargets;
     }
 
     /**
@@ -245,7 +301,7 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
         VisionUpdate visionUpdate = new VisionUpdate(image_timestamp);
         Log.i(LOGTAG, "Num targets = " + targetsInfo.numTargets);
 
-        for (int i = 0; i < targetsInfo.numTargets; ++i)
+        for (int i = 0; i < targetsInfo.numTargets && i < targetsInfo.targets.length; ++i)
         {
             NativePart.TargetsInfo.Target target = targetsInfo.targets[i];
 
@@ -274,8 +330,97 @@ public class VisionTrackerGLSurfaceView extends BetterCameraGLSurfaceView implem
             mRobotConnection.send(update);
         }
 
+        lastTargets = targetsInfo;
+
         //TODO: This seems to slow the memory bumps, any major effect on speed?
         System.gc();
         return true;
+    }
+
+    public String simpleVisionCalc(NativePart.TargetsInfo targets)
+    {
+        if(sensorManager == null)
+        {
+            sensorManager = (SensorManager) getContext().getApplicationContext().getSystemService(SENSOR_SERVICE);
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true);
+            magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD, true);
+            sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+            sensorManager.registerListener(sensorListener, magnetometer, SensorManager.SENSOR_DELAY_GAME);
+        }
+
+        if(accelerometerValues == null || magnetometerValues == null)
+        {
+            Toast.makeText(getContext(), "Getting Sensor Data", Toast.LENGTH_SHORT).show();
+            return "";
+        }
+
+        float[] rValues = new float[9];
+        SensorManager.getRotationMatrix(rValues, null, accelerometerValues, magnetometerValues);
+
+        float[] gyroValues = new float[3];
+        gyroValues = SensorManager.getOrientation(rValues, gyroValues);
+
+        double currentPhoneYawDegrees =
+                (-Math.toDegrees(gyroValues[1]));
+        //double currentPhoneYawDegrees = -Math.toDegrees(gyroValues[1]);
+        //double currentPhonePitchDegrees = (Math.toDegrees(gyroValues[2]) + 90);
+        double currentPhonePitchDegrees = (Math.toDegrees(gyroValues[2]) + 90);
+        Rotation2d cameraYaw = Rotation2d.fromDegrees(currentPhoneYawDegrees);
+        Rotation2d cameraPitch = Rotation2d.fromDegrees(currentPhonePitchDegrees);
+
+        if(targets == null || targets.numTargets <= 0 || targets.targets.length <= 0)
+        {
+            Log.d(LOGTAG, "Target Error");
+            return "";
+        }
+
+        NativePart.TargetsInfo.Target target = targets.targets[0];
+
+        double y = ((target.centroidX - kCenterCol) / getFocalLengthPixels());
+        //double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
+        double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
+        //double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
+
+        Log.d(LOGTAG, "Yaw " + currentPhoneYawDegrees + " Pitch " + currentPhonePitchDegrees + " Y " + y + " Z " + z);
+
+        double yDeadband = (y > -kCameraDeadband) && (y < kCameraDeadband) ? 0.0 : y;
+
+        double xYaw;
+        double yYaw;
+        double zYaw;
+
+
+            xYaw = (cameraYaw.cos() + yDeadband * cameraYaw.sin());
+            yYaw = (yDeadband * cameraYaw.cos() - cameraYaw.sin());
+            zYaw = z;
+
+
+            /*
+            xYaw = cameraYaw.cos() - yDeadband * cameraYaw.sin();
+            yYaw = -yDeadband * cameraYaw.cos() - cameraYaw.sin();
+            zYaw = z;
+            */
+
+        double xR = zYaw * cameraPitch.sin() + xYaw * cameraPitch.cos();
+        double yR = yYaw;
+        //double zR = (zYaw * cameraPitch.cos() - xYaw * cameraPitch.sin());
+        double zR = (zYaw * cameraPitch.cos() - xYaw * cameraPitch.sin());
+
+        Log.d(LOGTAG, "xYaw: "  + xYaw + " yYaw: " + yYaw + " zYaw " + zYaw + " xR: " + xR + " yR: " + yR + " zR: " + zR + " fl " + getFocalLengthPixels());
+
+        //if((zR > 0 && kHeightDifference > 0) || (zR < 0 && kHeightDifference < 0))
+        if(true)
+        {
+            double scaling = kHeightDifference / zR;
+            //double distance = Math.hypot(xR, yR) * scaling / 2 + kCubeCircularRadius;
+            double distance = (Math.hypot(xR, yR) * scaling + kCubeCircularRadius);
+            Rotation2d angle = new Rotation2d(xR, yR, true);
+            return (String.format(Locale.US, "D: %5.1f in A: %3.0f °", distance, -angle.getDegrees()));
+        }
+        else
+        {
+            Log.d(LOGTAG, "Vision Cal Math Error");
+            return "";
+        }
     }
 }

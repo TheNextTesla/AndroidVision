@@ -158,7 +158,7 @@ std::vector<TargetInfo> processImpl(int w, int h, int texOut, DisplayMode mode,
         }
     }
 
-    LOGD("Total Number of Targets: %d", accepted_targets.size());
+    LOGD("Total Number of Targets: %d", (int) accepted_targets.size());
 
     //Takes the top so many blocks in size
     const int kMaxTargets = 6;
